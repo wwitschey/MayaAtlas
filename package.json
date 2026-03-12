@@ -1,0 +1,11 @@
+{
+  "name": "maya-atlas",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "cd apps/api && uvicorn app.main:app --reload",
+    "build:web": "pnpm --filter web build",
+    "lint:web": "pnpm --filter web lint"
+  }
+}
