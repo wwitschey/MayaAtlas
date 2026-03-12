@@ -4,7 +4,11 @@ import { useState } from "react";
 import type { SiteSummary } from "../../lib/types";
 import { searchSites } from "../../lib/api";
 
-export default function SearchBox({ onSelectSite }: { onSelectSite: (site: SiteSummary) => void }) {
+export default function SearchBox({
+  onSelectSite,
+}: {
+  onSelectSite: (site: SiteSummary) => void;
+}) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SiteSummary[]>([]);
 
@@ -19,10 +23,18 @@ export default function SearchBox({ onSelectSite }: { onSelectSite: (site: SiteS
   }
 
   return (
-    <div style={{ background: "white", padding: 12, borderRadius: 12, width: 320, boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
+    <div
+      style={{
+        background: "white",
+        padding: 12,
+        borderRadius: 12,
+        width: 320,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+      }}
+    >
       <input
         value={query}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => void handleChange(e.target.value)}
         placeholder="Search Maya sites"
         style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
       />
@@ -31,11 +43,24 @@ export default function SearchBox({ onSelectSite }: { onSelectSite: (site: SiteS
           {results.map((site) => (
             <button
               key={site.slug}
-              onClick={() => onSelectSite(site)}
-              style={{ textAlign: "left", padding: 10, borderRadius: 8, border: "1px solid #eee", background: "#fff", cursor: "pointer" }}
+              onClick={() => {
+                onSelectSite(site);
+                setQuery(site.display_name);
+                setResults([]);
+              }}
+              style={{
+                textAlign: "left",
+                padding: 10,
+                borderRadius: 8,
+                border: "1px solid #eee",
+                background: "#fff",
+                cursor: "pointer",
+              }}
             >
               <div><strong>{site.display_name}</strong></div>
-              <div style={{ fontSize: 12, opacity: 0.75 }}>{site.site_type} · {site.country_code ?? ""}</div>
+              <div style={{ fontSize: 12, opacity: 0.75 }}>
+                {site.site_type} · {site.country_code ?? ""}
+              </div>
             </button>
           ))}
         </div>

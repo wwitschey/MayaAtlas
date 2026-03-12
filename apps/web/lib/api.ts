@@ -7,3 +7,15 @@ export async function searchSites(q: string): Promise<SiteSummary[]> {
   if (!response.ok) return [];
   return response.json();
 }
+
+export async function listSites(): Promise<SiteSummary[]> {
+  const response = await fetch(`${API_BASE}/api/sites`);
+  if (!response.ok) return [];
+  return response.json();
+}
+
+export async function getSite(slug: string): Promise<SiteSummary | null> {
+  const response = await fetch(`${API_BASE}/api/sites/${encodeURIComponent(slug)}`);
+  if (!response.ok) return null;
+  return response.json();
+}
