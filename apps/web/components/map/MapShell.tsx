@@ -59,6 +59,26 @@ export default function MapShell() {
     selectedFeatureIdRef.current = slug;
   }
 
+  async function refreshSitesForViewport(map: maplibregl.Map) {
+    const bounds = map.getBounds();
+    if (!bounds) return;
+
+    const bbox = [
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth(),
+    ].join(",");
+
+    const sites = await listSites(bbox);
+    const data = toGeoJSON(sites);
+
+    const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (source) {
+      source.setData(data);
+    }
+  }
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -74,7 +94,15 @@ export default function MapShell() {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", async () => {
-      const sites = await listSites();
+      const bounds = map.getBounds();
+      const bbox = [
+        bounds.getWest(),
+        bounds.getSouth(),
+        bounds.getEast(),
+        bounds.getNorth(),
+      ].join(",");
+
+      const sites = await listSites(bbox);
       const data = toGeoJSON(sites);
 
       map.addSource(SOURCE_ID, {
@@ -159,6 +187,10 @@ export default function MapShell() {
 
       map.on("mouseleave", CIRCLE_LAYER_ID, () => {
         map.getCanvas().style.cursor = "";
+      });
+
+      map.on("moveend", async () => {
+        await refreshSitesForViewport(map);
       });
     });
 
