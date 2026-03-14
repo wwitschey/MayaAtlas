@@ -10,10 +10,21 @@ import type { SiteDetail, SiteSummary } from "../../lib/types";
 import { getSite, listSites } from "../../lib/api";
 
 const SOURCE_ID = "maya-sites";
+const CLUSTER_LAYER_ID = "maya-sites-clusters";
+const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
 const LABEL_LAYER_ID = "maya-sites-labels";
 
-function toGeoJSON(sites: SiteSummary[]): GeoJSON.FeatureCollection<GeoJSON.Point> {
+type ClusterSource = maplibregl.GeoJSONSource & {
+  getClusterExpansionZoom?: (
+    clusterId: number,
+    callback: (err: unknown, zoom: number) => void
+  ) => void;
+};
+
+function toGeoJSON(
+  sites: SiteSummary[]
+): GeoJSON.FeatureCollection<GeoJSON.Point> {
   return {
     type: "FeatureCollection",
     features: sites.map((site) => ({
@@ -37,7 +48,15 @@ export default function MapShell() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const selectedFeatureIdRef = useRef<string | null>(null);
+  const popupRef = useRef<maplibregl.Popup | null>(null);
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
+
+  function clearPopup() {
+    if (popupRef.current) {
+      popupRef.current.remove();
+      popupRef.current = null;
+    }
+  }
 
   function setSelectedFeature(slug: string | null) {
     const map = mapInstanceRef.current;
@@ -49,7 +68,10 @@ export default function MapShell() {
     const previous = selectedFeatureIdRef.current;
 
     if (previous) {
-      map.setFeatureState({ source: SOURCE_ID, id: previous }, { selected: false });
+      map.setFeatureState(
+        { source: SOURCE_ID, id: previous },
+        { selected: false }
+      );
     }
 
     if (slug) {
@@ -109,12 +131,53 @@ export default function MapShell() {
         type: "geojson",
         data,
         promoteId: "slug",
+        cluster: true,
+        clusterMaxZoom: 8,
+        clusterRadius: 50,
+      });
+
+      map.addLayer({
+        id: CLUSTER_LAYER_ID,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#7c3aed",
+          "circle-radius": [
+            "step",
+            ["get", "point_count"],
+            16,
+            10,
+            20,
+            50,
+            26,
+            100,
+            32,
+          ],
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
+      });
+
+      map.addLayer({
+        id: CLUSTER_COUNT_LAYER_ID,
+        type: "symbol",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-size": 12,
+        },
+        paint: {
+          "text-color": "#ffffff",
+        },
       });
 
       map.addLayer({
         id: CIRCLE_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-radius": [
             "case",
@@ -142,6 +205,7 @@ export default function MapShell() {
         id: LABEL_LAYER_ID,
         type: "symbol",
         source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
         minzoom: 7,
         layout: {
           "text-field": ["get", "display_name"],
@@ -152,6 +216,33 @@ export default function MapShell() {
           "text-halo-color": "#ffffff",
           "text-halo-width": 1.2,
         },
+      });
+
+      map.on("click", CLUSTER_LAYER_ID, (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: [CLUSTER_LAYER_ID],
+        });
+
+        const cluster = features[0];
+        if (!cluster) return;
+
+        const clusterId = cluster.properties?.cluster_id;
+        const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
+
+        if (!source?.getClusterExpansionZoom || clusterId == null) return;
+
+        source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
+          if (err) return;
+
+          const geometry = cluster.geometry as GeoJSON.Point;
+          const coordinates = geometry.coordinates as [number, number];
+
+          map.easeTo({
+            center: coordinates,
+            zoom,
+            duration: 500,
+          });
+        });
       });
 
       map.on("click", CIRCLE_LAYER_ID, async (e) => {
@@ -169,8 +260,9 @@ export default function MapShell() {
         });
 
         setSelectedFeature(slug);
+        clearPopup();
 
-        new maplibregl.Popup({ offset: 12 })
+        popupRef.current = new maplibregl.Popup({ offset: 12 })
           .setLngLat(coordinates)
           .setHTML(`<strong>${feature.properties?.display_name ?? slug}</strong>`)
           .addTo(map);
@@ -179,6 +271,14 @@ export default function MapShell() {
         if (site) {
           setSelectedSite(site);
         }
+      });
+
+      map.on("mouseenter", CLUSTER_LAYER_ID, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+
+      map.on("mouseleave", CLUSTER_LAYER_ID, () => {
+        map.getCanvas().style.cursor = "";
       });
 
       map.on("mouseenter", CIRCLE_LAYER_ID, () => {
@@ -197,6 +297,7 @@ export default function MapShell() {
     mapInstanceRef.current = map;
 
     return () => {
+      clearPopup();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -207,6 +308,13 @@ export default function MapShell() {
 
     const map = mapInstanceRef.current;
     if (map) {
+      clearPopup();
+
+      popupRef.current = new maplibregl.Popup({ offset: 12 })
+        .setLngLat([site.longitude, site.latitude])
+        .setHTML(`<strong>${site.display_name}</strong>`)
+        .addTo(map);
+
       map.flyTo({
         center: [site.longitude, site.latitude],
         zoom: 9,
