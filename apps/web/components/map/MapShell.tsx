@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import SearchBox from "./SearchBox";
 import LayerPanel from "./LayerPanel";
 import SiteDrawer from "./SiteDrawer";
-import type { SiteSummary } from "../../lib/types";
+import type { SiteDetail, SiteSummary } from "../../lib/types";
 import { getSite, listSites } from "../../lib/api";
 
 const SOURCE_ID = "maya-sites";
@@ -37,40 +37,26 @@ export default function MapShell() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const selectedFeatureIdRef = useRef<string | null>(null);
-  const [selectedSite, setSelectedSite] = useState<SiteSummary | null>(null);
+  const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
 
   function setSelectedFeature(slug: string | null) {
     const map = mapInstanceRef.current;
-    console.log("[setSelectedFeature] called with slug:", slug);
-
-    if (!map) {
-      console.log("[setSelectedFeature] no map instance");
-      return;
-    }
+    if (!map) return;
 
     const source = map.getSource(SOURCE_ID);
-    console.log("[setSelectedFeature] source exists:", !!source);
-
-    if (!source) {
-      console.log("[setSelectedFeature] source not ready");
-      return;
-    }
+    if (!source) return;
 
     const previous = selectedFeatureIdRef.current;
-    console.log("[setSelectedFeature] previous selected slug:", previous);
 
     if (previous) {
-      console.log("[setSelectedFeature] clearing previous feature state:", previous);
       map.setFeatureState({ source: SOURCE_ID, id: previous }, { selected: false });
     }
 
     if (slug) {
-      console.log("[setSelectedFeature] setting selected feature state:", slug);
       map.setFeatureState({ source: SOURCE_ID, id: slug }, { selected: true });
     }
 
     selectedFeatureIdRef.current = slug;
-    console.log("[setSelectedFeature] selectedFeatureIdRef now:", selectedFeatureIdRef.current);
   }
 
   useEffect(() => {
@@ -124,11 +110,6 @@ export default function MapShell() {
         },
       });
 
-      console.log("[map load] source added:", SOURCE_ID);
-      console.log("[map load] circle layer added:", CIRCLE_LAYER_ID);
-      console.log("[map load] label layer added:", LABEL_LAYER_ID);
-      console.log("[map load] first few sites:", sites.slice(0, 5));
-
       map.addLayer({
         id: LABEL_LAYER_ID,
         type: "symbol",
@@ -146,22 +127,12 @@ export default function MapShell() {
       });
 
       map.on("click", CIRCLE_LAYER_ID, async (e) => {
-        console.log("[marker click] event:", e);
-
         const feature = e.features?.[0];
-        console.log("[marker click] feature:", feature);
-
         const slug = feature?.properties?.slug;
-        console.log("[marker click] slug:", slug);
-
-        if (!slug) {
-          console.log("[marker click] no slug found");
-          return;
-        }
+        if (!slug) return;
 
         const geometry = feature.geometry as GeoJSON.Point;
         const coordinates = geometry.coordinates as [number, number];
-        console.log("[marker click] coordinates:", coordinates);
 
         map.flyTo({
           center: coordinates,
@@ -171,16 +142,12 @@ export default function MapShell() {
 
         setSelectedFeature(slug);
 
-        console.log("[marker click] feature state after set:", map.getFeatureState({ source: SOURCE_ID, id: slug }));
-
         new maplibregl.Popup({ offset: 12 })
           .setLngLat(coordinates)
           .setHTML(`<strong>${feature.properties?.display_name ?? slug}</strong>`)
           .addTo(map);
 
         const site = await getSite(slug);
-        console.log("[marker click] site API result:", site);
-
         if (site) {
           setSelectedSite(site);
         }
@@ -203,28 +170,27 @@ export default function MapShell() {
     };
   }, []);
 
-  function handleSelectSite(site: SiteSummary) {
-    console.log("[handleSelectSite] site:", site);
-
-    setSelectedSite(site);
+  async function handleSelectSite(site: SiteSummary) {
     setSelectedFeature(site.slug);
 
     const map = mapInstanceRef.current;
-    if (!map) {
-      console.log("[handleSelectSite] no map instance");
-      return;
+    if (map) {
+      map.flyTo({
+        center: [site.longitude, site.latitude],
+        zoom: 9,
+        essential: true,
+      });
     }
 
-    map.flyTo({
-      center: [site.longitude, site.latitude],
-      zoom: 9,
-      essential: true,
-    });
-
-    console.log(
-      "[handleSelectSite] feature state after set:",
-      map.getFeatureState({ source: SOURCE_ID, id: site.slug })
-    );
+    const detailedSite = await getSite(site.slug);
+    if (detailedSite) {
+      setSelectedSite(detailedSite);
+    } else {
+      setSelectedSite({
+        ...site,
+        sources: [],
+      });
+    }
   }
 
   return (

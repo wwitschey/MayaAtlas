@@ -1,6 +1,6 @@
-import type { SiteSummary } from "../../lib/types";
+import type { SiteDetail } from "../../lib/types";
 
-export default function SiteDrawer({ site }: { site: SiteSummary | null }) {
+export default function SiteDrawer({ site }: { site: SiteDetail | null }) {
   if (!site) return null;
 
   return (
@@ -23,6 +23,25 @@ export default function SiteDrawer({ site }: { site: SiteSummary | null }) {
       <p><strong>Country:</strong> {site.country_code ?? "Unknown"}</p>
       <p><strong>Description:</strong> {site.short_description ?? "No summary yet."}</p>
       <p><strong>Coordinates:</strong> {site.latitude}, {site.longitude}</p>
+
+      {site.sources && site.sources.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Sources</div>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {site.sources.map((src, i) => (
+              <li key={`${src.short_citation ?? "source"}-${i}`} style={{ marginBottom: 6 }}>
+                {src.url ? (
+                  <a href={src.url} target="_blank" rel="noreferrer">
+                    {src.short_citation ?? src.title ?? "Source"}
+                  </a>
+                ) : (
+                  <span>{src.short_citation ?? src.title ?? "Source"}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </aside>
   );
 }

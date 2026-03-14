@@ -1,4 +1,4 @@
-import type { SiteSummary } from "./types";
+import type { SiteDetail, SiteSummary } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
@@ -14,7 +14,7 @@ export async function listSites(): Promise<SiteSummary[]> {
   return response.json();
 }
 
-export async function getSite(slug: string): Promise<SiteSummary | null> {
+export async function getSite(slug: string): Promise<SiteDetail | null> {
   const response = await fetch(`${API_BASE}/api/sites/${encodeURIComponent(slug)}`);
   if (!response.ok) return null;
   return response.json();
