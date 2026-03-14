@@ -15,6 +15,8 @@ const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
 const LABEL_LAYER_ID = "maya-sites-labels";
 
+const REFRESH_DEBOUNCE_MS = 250;
+
 type ClusterSource = maplibregl.GeoJSONSource & {
   getClusterExpansionZoom?: (
     clusterId: number,
@@ -44,11 +46,31 @@ function toGeoJSON(
   };
 }
 
+function roundCoord(value: number, digits = 3): number {
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function getRoundedBbox(map: maplibregl.Map): string {
+  const bounds = map.getBounds();
+  return [
+    roundCoord(bounds.getWest()),
+    roundCoord(bounds.getSouth()),
+    roundCoord(bounds.getEast()),
+    roundCoord(bounds.getNorth()),
+  ].join(",");
+}
+
 export default function MapShell() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const selectedFeatureIdRef = useRef<string | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastLoadedBboxRef = useRef<string | null>(null);
+  const requestSerialRef = useRef(0);
+  const isRefreshingRef = useRef(false);
+
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
 
   function clearPopup() {
@@ -81,24 +103,50 @@ export default function MapShell() {
     selectedFeatureIdRef.current = slug;
   }
 
-  async function refreshSitesForViewport(map: maplibregl.Map) {
-    const bounds = map.getBounds();
-    if (!bounds) return;
+  async function refreshSitesForViewport(
+    map: maplibregl.Map,
+    options?: { force?: boolean }
+  ) {
+    const bbox = getRoundedBbox(map);
+    const force = options?.force ?? false;
 
-    const bbox = [
-      bounds.getWest(),
-      bounds.getSouth(),
-      bounds.getEast(),
-      bounds.getNorth(),
-    ].join(",");
-
-    const sites = await listSites(bbox);
-    const data = toGeoJSON(sites);
-
-    const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-    if (source) {
-      source.setData(data);
+    if (!force && bbox === lastLoadedBboxRef.current) {
+      return;
     }
+
+    const requestId = ++requestSerialRef.current;
+    isRefreshingRef.current = true;
+
+    try {
+      const sites = await listSites(bbox);
+
+      // Ignore stale responses that return after a newer request started
+      if (requestId !== requestSerialRef.current) {
+        return;
+      }
+
+      const data = toGeoJSON(sites);
+      const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+
+      if (source) {
+        source.setData(data);
+        lastLoadedBboxRef.current = bbox;
+      }
+    } finally {
+      if (requestId === requestSerialRef.current) {
+        isRefreshingRef.current = false;
+      }
+    }
+  }
+
+  function scheduleViewportRefresh(map: maplibregl.Map, options?: { force?: boolean }) {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
+    refreshTimeoutRef.current = setTimeout(() => {
+      void refreshSitesForViewport(map, options);
+    }, REFRESH_DEBOUNCE_MS);
   }
 
   useEffect(() => {
@@ -116,16 +164,9 @@ export default function MapShell() {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", async () => {
-      const bounds = map.getBounds();
-      const bbox = [
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth(),
-      ].join(",");
-
-      const sites = await listSites(bbox);
-      const data = toGeoJSON(sites);
+      const initialSites = await listSites(getRoundedBbox(map));
+      const data = toGeoJSON(initialSites);
+      lastLoadedBboxRef.current = getRoundedBbox(map);
 
       map.addSource(SOURCE_ID, {
         type: "geojson",
@@ -289,14 +330,17 @@ export default function MapShell() {
         map.getCanvas().style.cursor = "";
       });
 
-      map.on("moveend", async () => {
-        await refreshSitesForViewport(map);
+      map.on("moveend", () => {
+        scheduleViewportRefresh(map);
       });
     });
 
     mapInstanceRef.current = map;
 
     return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
       clearPopup();
       map.remove();
       mapInstanceRef.current = null;
@@ -320,6 +364,9 @@ export default function MapShell() {
         zoom: 9,
         essential: true,
       });
+
+      // Optional force refresh after search fly-to lands in a new viewport
+      scheduleViewportRefresh(map, { force: true });
     }
 
     const detailedSite = await getSite(site.slug);
