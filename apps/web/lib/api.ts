@@ -8,19 +8,18 @@ export async function searchSites(q: string): Promise<SiteSummary[]> {
   return response.json();
 }
 
-export async function listSites(bbox?: string, period?: string): Promise<SiteSummary[]> {
+export async function listSites(
+  bbox?: string,
+  period?: string,
+  limit = 5000
+): Promise<SiteSummary[]> {
   const params = new URLSearchParams();
 
-  if (bbox) {
-    params.set("bbox", bbox);
-  }
+  if (bbox) params.set("bbox", bbox);
+  if (period) params.set("period", period);
+  params.set("limit", String(limit));
 
-  if (period) {
-    params.set("period", period);
-  }
-
-  const url = `${API_BASE}/api/sites${params.toString() ? `?${params.toString()}` : ""}`;
-
+  const url = `${API_BASE}/api/sites?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) return [];
   return response.json();

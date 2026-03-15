@@ -8,6 +8,7 @@ router = APIRouter()
 def list_sites(
     bbox: str | None = Query(default=None, description="west,south,east,north"),
     period: str | None = Query(default=None, description="Broad historical period label"),
+    limit: int = Query(default=5000, ge=1, le=20000),
 ):
     where_clauses = []
     params: list[object] = []
@@ -59,7 +60,10 @@ def list_sites(
     FROM site_summary_v
     {where_sql}
     ORDER BY display_name
+    LIMIT %s
     """
+
+    params.append(limit)
 
     with SessionLocal() as session:
         rows = session.connection().exec_driver_sql(sql, tuple(params)).mappings().all()

@@ -9,6 +9,13 @@ import SiteDrawer from "./SiteDrawer";
 import PeriodFilter from "./PeriodFilter";
 import type { SiteDetail, SiteSummary } from "../../lib/types";
 import { getSite, listSites } from "../../lib/api";
+import {
+  getQueryTileZoom,
+  getVisibleTiles,
+  tileBboxString,
+  tileKey,
+  type TileCoord,
+} from "../../lib/tiles";
 
 const SOURCE_ID = "maya-sites";
 const SELECTED_SOURCE_ID = "maya-selected-site";
@@ -26,6 +33,11 @@ type ClusterSource = maplibregl.GeoJSONSource & {
     clusterId: number,
     callback: (err: unknown, zoom: number) => void
   ) => void;
+};
+
+type TileCacheValue = {
+  sites: SiteSummary[];
+  fetchedAt: number;
 };
 
 function toGeoJSON(
@@ -79,14 +91,15 @@ function roundCoord(value: number, digits = 3): number {
   return Math.round(value * factor) / factor;
 }
 
-function getRoundedBbox(map: maplibregl.Map): string {
+function getRoundedViewportKey(map: maplibregl.Map, period: string): string {
   const bounds = map.getBounds();
   return [
-    roundCoord(bounds.getWest()),
-    roundCoord(bounds.getSouth()),
-    roundCoord(bounds.getEast()),
-    roundCoord(bounds.getNorth()),
-  ].join(",");
+    roundCoord(bounds.getWest(), 2),
+    roundCoord(bounds.getSouth(), 2),
+    roundCoord(bounds.getEast(), 2),
+    roundCoord(bounds.getNorth(), 2),
+    period,
+  ].join("|");
 }
 
 export default function MapShell() {
@@ -94,10 +107,11 @@ export default function MapShell() {
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLoadedKeyRef = useRef<string | null>(null);
+  const lastLoadedViewportKeyRef = useRef<string | null>(null);
   const requestSerialRef = useRef(0);
   const selectedPeriodRef = useRef<string>("");
   const clusterHandlerAttachedRef = useRef(false);
+  const tileCacheRef = useRef<Map<string, TileCacheValue>>(new Map());
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
@@ -299,23 +313,73 @@ export default function MapShell() {
     });
   }
 
+  async function fetchVisibleTiles(
+    map: maplibregl.Map,
+    period: string
+  ): Promise<SiteSummary[]> {
+    const bounds = map.getBounds();
+    const queryZoom = getQueryTileZoom(map.getZoom());
+    const tiles = getVisibleTiles(
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth(),
+      queryZoom
+    );
+
+    const requestId = ++requestSerialRef.current;
+
+    const tileResults = await Promise.all(
+      tiles.map(async (tile: TileCoord) => {
+        const cacheKey = `${tileKey(tile)}|${period}`;
+        const cached = tileCacheRef.current.get(cacheKey);
+        if (cached) {
+          return cached.sites;
+        }
+
+        const sites = await listSites(
+          tileBboxString(tile),
+          period || undefined,
+          5000
+        );
+
+        tileCacheRef.current.set(cacheKey, {
+          sites,
+          fetchedAt: Date.now(),
+        });
+
+        return sites;
+      })
+    );
+
+    if (requestId !== requestSerialRef.current) {
+      return [];
+    }
+
+    const deduped = new Map<string, SiteSummary>();
+    for (const group of tileResults) {
+      for (const site of group) {
+        if (!deduped.has(site.slug)) {
+          deduped.set(site.slug, site);
+        }
+      }
+    }
+
+    return Array.from(deduped.values());
+  }
+
   async function rebuildMainSourceForViewport(
     map: maplibregl.Map,
     options?: { force?: boolean; periodOverride?: string }
   ) {
-    const bbox = getRoundedBbox(map);
     const period = options?.periodOverride ?? selectedPeriodRef.current;
-    const key = `${bbox}|${period}`;
+    const viewportKey = getRoundedViewportKey(map, period);
     const force = options?.force ?? false;
 
-    if (!force && key === lastLoadedKeyRef.current) return;
-
-    const requestId = ++requestSerialRef.current;
-    const sites = await listSites(bbox, period || undefined);
-
-    if (requestId !== requestSerialRef.current) return;
+    if (!force && viewportKey === lastLoadedViewportKeyRef.current) return;
 
     const clustered = !period;
+    const sites = await fetchVisibleTiles(map, period);
     const data = toGeoJSON(sites);
 
     clearPopup();
@@ -325,7 +389,8 @@ export default function MapShell() {
     removeMainSourceAndLayers(map);
     addMainSourceAndLayers(map, data, clustered);
     wireClusterClick(map, clustered);
-    lastLoadedKeyRef.current = key;
+
+    lastLoadedViewportKeyRef.current = viewportKey;
   }
 
   function scheduleViewportRefresh(
@@ -356,15 +421,10 @@ export default function MapShell() {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", async () => {
-      const initialBbox = getRoundedBbox(map);
       const initialPeriod = selectedPeriodRef.current;
-      const initialSites = await listSites(
-        initialBbox,
-        initialPeriod || undefined
-      );
+      const initialSites = await fetchVisibleTiles(map, initialPeriod);
       const clustered = !initialPeriod;
-
-      lastLoadedKeyRef.current = `${initialBbox}|${initialPeriod}`;
+      lastLoadedViewportKeyRef.current = getRoundedViewportKey(map, initialPeriod);
 
       addMainSourceAndLayers(map, toGeoJSON(initialSites), clustered);
       wireClusterClick(map, clustered);
