@@ -56,3 +56,28 @@ SELECT
 WHERE NOT EXISTS (
   SELECT 1 FROM sources WHERE short_citation = 'Wikidata'
 );
+
+INSERT INTO sources (
+  source_type,
+  short_citation,
+  full_citation,
+  authors,
+  title,
+  publication_year,
+  url,
+  license,
+  notes
+)
+SELECT
+  'dataset',
+  'Wayeb GIS Atlas',
+  'Wayeb GIS Atlas Maya archaeological site data harvested for Maya Atlas.',
+  'Wayeb',
+  'Atlas of Maya Archaeological Sites',
+  NULL,
+  'https://www.wayeb.org/resources-links/wayeb-resources/wayeb-gis-atlas/',
+  NULL,
+  'Harvested from the public Wayeb Maya ruins KML.'
+WHERE NOT EXISTS (
+  SELECT 1 FROM sources WHERE short_citation = 'Wayeb GIS Atlas'
+);

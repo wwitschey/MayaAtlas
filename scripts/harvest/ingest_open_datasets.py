@@ -21,6 +21,7 @@ RAW_DIR = REPO_ROOT / "data" / "raw" / "open-datasets"
 CURATED_DIR = REPO_ROOT / "data" / "curated" / "open-datasets"
 WIKIDATA_RAW = RAW_DIR / "wikidata_sites.csv"
 OSM_RAW = RAW_DIR / "osm_sites.csv"
+WAYEB_RAW = RAW_DIR / "wayeb_sites.csv"
 CURATED_OUTPUT = CURATED_DIR / "sites_normalized.csv"
 REVIEW_OUTPUT = CURATED_DIR / "review_candidates.csv"
 REVIEW_RESOLUTIONS = CURATED_DIR / "review_resolutions.csv"
@@ -267,8 +268,8 @@ def is_near_existing_row(candidate: HarvestRow, accepted_rows: Iterable[HarvestR
 
 
 def normalize_rows_with_report(*datasets: list[HarvestRow]) -> NormalizationResult:
-    # Prefer Wikidata rows when slugs collide; otherwise keep the first seen row.
-    source_priority = {"Wikidata": 0, "OpenStreetMap": 1}
+    # Prefer Wayeb GIS Atlas, then Wikidata, then OpenStreetMap rows when slugs collide.
+    source_priority = {"Wayeb GIS Atlas": 0, "Wikidata": 1, "OpenStreetMap": 2}
     deduped_by_slug: dict[str, HarvestRow] = {}
     seen_exact_coords: set[tuple[int, int]] = set()
     duplicate_slug_count = 0
@@ -617,15 +618,18 @@ def main() -> None:
     if not args.skip_harvest:
         run_python_script(REPO_ROOT / "scripts" / "harvest" / "osm_archaeological_sites.py")
         run_python_script(REPO_ROOT / "scripts" / "harvest" / "wikidata_sites.py")
+        run_python_script(REPO_ROOT / "scripts" / "harvest" / "wayeb_gis_atlas_sites.py")
 
     osm_rows = read_rows(OSM_RAW)
     wikidata_rows = read_rows(WIKIDATA_RAW)
+    wayeb_rows = read_rows(WAYEB_RAW)
 
     validate_rows(osm_rows, OSM_RAW.name)
     validate_rows(wikidata_rows, WIKIDATA_RAW.name)
+    validate_rows(wayeb_rows, WAYEB_RAW.name)
 
-    raw_rows = [*osm_rows, *wikidata_rows]
-    normalization = normalize_rows_with_report(osm_rows, wikidata_rows)
+    raw_rows = [*osm_rows, *wikidata_rows, *wayeb_rows]
+    normalization = normalize_rows_with_report(wayeb_rows, osm_rows, wikidata_rows)
     review_resolutions = load_review_resolutions(REVIEW_RESOLUTIONS)
     resolved_rows, resolution_count = apply_review_resolutions(
         normalization.rows, review_resolutions
