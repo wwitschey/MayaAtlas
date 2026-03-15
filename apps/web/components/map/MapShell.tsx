@@ -19,7 +19,13 @@ import {
 
 const SOURCE_ID = "maya-sites";
 const SELECTED_SOURCE_ID = "maya-selected-site";
-const TERRAIN_SOURCE_ID = "maya-terrain";
+const TERRAIN_SOURCE_ID = "maya-terrain-3d";
+const HILLSHADE_SOURCE_ID = "maya-terrain-hillshade";
+const HILLSHADE_LAYER_ID = "maya-hillshade";
+const DEFAULT_TERRAIN_TILES_URL =
+  "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
+const DEFAULT_TERRAIN_ENCODING = "terrarium";
+const DEFAULT_TERRAIN_TILE_SIZE = 256;
 
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
@@ -143,26 +149,72 @@ function buildUnclusteredSiteFilter(
 }
 
 function addTerrainSource(map: maplibregl.Map) {
-  const terrainTilesUrl = process.env.NEXT_PUBLIC_TERRAIN_TILES_URL;
-  if (!terrainTilesUrl || map.getSource(TERRAIN_SOURCE_ID)) return;
+  const terrainTilesUrl =
+    process.env.NEXT_PUBLIC_TERRAIN_TILES_URL || DEFAULT_TERRAIN_TILES_URL;
+  if (!terrainTilesUrl) return;
 
-  const tileSize = Number(process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || "256");
+  const tileSize = Number(
+    process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || String(DEFAULT_TERRAIN_TILE_SIZE)
+  );
   const encoding =
-    process.env.NEXT_PUBLIC_TERRAIN_ENCODING === "terrarium"
-      ? "terrarium"
-      : "mapbox";
+    process.env.NEXT_PUBLIC_TERRAIN_ENCODING || DEFAULT_TERRAIN_ENCODING;
 
-  map.addSource(TERRAIN_SOURCE_ID, {
-    type: "raster-dem",
-    tiles: [terrainTilesUrl],
-    tileSize,
-    encoding,
-  } as maplibregl.RasterDEMSourceSpecification);
+  if (!map.getSource(TERRAIN_SOURCE_ID)) {
+    map.addSource(TERRAIN_SOURCE_ID, {
+      type: "raster-dem",
+      tiles: [terrainTilesUrl],
+      tileSize,
+      encoding,
+    } as maplibregl.RasterDEMSourceSpecification);
+  }
 
-  map.setTerrain({
-    source: TERRAIN_SOURCE_ID,
-    exaggeration: 1.1,
-  });
+  if (!map.getSource(HILLSHADE_SOURCE_ID)) {
+    map.addSource(HILLSHADE_SOURCE_ID, {
+      type: "raster-dem",
+      tiles: [terrainTilesUrl],
+      tileSize,
+      encoding,
+    } as maplibregl.RasterDEMSourceSpecification);
+  }
+}
+
+function syncElevationLayers(map: maplibregl.Map, enabled: boolean) {
+  const hasTerrainSource = Boolean(map.getSource(TERRAIN_SOURCE_ID));
+  const hasHillshadeSource = Boolean(map.getSource(HILLSHADE_SOURCE_ID));
+  if (!hasTerrainSource || !hasHillshadeSource) return;
+
+  if (!map.getLayer(HILLSHADE_LAYER_ID)) {
+    map.addLayer({
+      id: HILLSHADE_LAYER_ID,
+      type: "hillshade",
+      source: HILLSHADE_SOURCE_ID,
+      layout: {
+        visibility: enabled ? "visible" : "none",
+      },
+      paint: {
+        "hillshade-shadow-color": "#5b4636",
+        "hillshade-highlight-color": "#fff7ed",
+        "hillshade-accent-color": "#8b7355",
+        "hillshade-exaggeration": 0.3,
+      },
+    }, CLUSTER_LAYER_ID);
+  } else {
+    map.setLayoutProperty(
+      HILLSHADE_LAYER_ID,
+      "visibility",
+      enabled ? "visible" : "none"
+    );
+  }
+
+  if (enabled) {
+    map.setTerrain({
+      source: TERRAIN_SOURCE_ID,
+      exaggeration: 1.08,
+    });
+    return;
+  }
+
+  map.setTerrain(null);
 }
 
 export default function MapShell() {
@@ -179,6 +231,7 @@ export default function MapShell() {
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [elevationEnabled, setElevationEnabled] = useState(false);
 
   useEffect(() => {
     selectedPeriodRef.current = selectedPeriod;
@@ -525,6 +578,7 @@ export default function MapShell() {
       addTerrainSource(map);
       const initialSites = await fetchVisibleTiles(map, selectedPeriodRef.current);
       addMainSourceAndLayers(map, null, toGeoJSON(initialSites));
+      syncElevationLayers(map, elevationEnabled);
       wireClusterInteractions(map);
 
       map.addSource(SELECTED_SOURCE_ID, {
@@ -619,6 +673,12 @@ export default function MapShell() {
     void refreshMainSource(map, selectedPeriod);
   }, [selectedPeriod]);
 
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    syncElevationLayers(map, elevationEnabled);
+  }, [elevationEnabled]);
+
   async function handleSelectSite(site: SiteSummary) {
     const map = mapInstanceRef.current;
     if (map) {
@@ -664,6 +724,9 @@ export default function MapShell() {
           );
         }
       });
+    }
+    if (layerId === 2) {
+      setElevationEnabled(visible);
     }
     // Other layers will be added later
   }

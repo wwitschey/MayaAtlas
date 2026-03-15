@@ -31,6 +31,13 @@ export default function LayerPanel({ onLayerToggle }: LayerPanelProps) {
     loadLayers();
   }, []);
 
+  const visibleLayers = layers.filter((layer) => {
+    // The chronology entry is not a real separate map overlay yet.
+    // Temporal filtering is currently handled by the PeriodFilter control.
+    if (layer.key === "chronology") return false;
+    return true;
+  });
+
   const handleToggle = (layerId: number, visible: boolean) => {
     setLayerVisibility(prev => ({ ...prev, [layerId]: visible }));
     updateLayerVisibility(layerId, visible);
@@ -49,7 +56,7 @@ export default function LayerPanel({ onLayerToggle }: LayerPanelProps) {
   return (
     <div style={{ background: "white", padding: 12, borderRadius: 12, width: 220, boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
       <div style={{ fontWeight: 700, marginBottom: 8 }}>Layers</div>
-      {layers.map(layer => (
+      {visibleLayers.map(layer => (
         <label key={layer.id} style={{ display: "block", marginBottom: 6 }}>
           <input
             type="checkbox"
