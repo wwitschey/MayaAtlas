@@ -5,10 +5,13 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import re
 import subprocess
 from collections import Counter
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
+import unicodedata
 from typing import Iterable
 
 from dotenv import load_dotenv
@@ -19,6 +22,7 @@ CURATED_DIR = REPO_ROOT / "data" / "curated" / "open-datasets"
 WIKIDATA_RAW = RAW_DIR / "wikidata_sites.csv"
 OSM_RAW = RAW_DIR / "osm_sites.csv"
 CURATED_OUTPUT = CURATED_DIR / "sites_normalized.csv"
+REVIEW_OUTPUT = CURATED_DIR / "review_candidates.csv"
 CANONICAL_SITE_HINTS = (
     "zona arqueológica",
     "zona arqueologica",
@@ -45,6 +49,41 @@ SUBFEATURE_HINTS = (
     "torre ",
     "casa ",
 )
+GENERIC_NAME_TOKENS = {
+    "archaeological",
+    "archaeology",
+    "archaeologico",
+    "archaeological",
+    "archaeological",
+    "arqueologica",
+    "arqueologico",
+    "arqueologico",
+    "arqueologica",
+    "zona",
+    "sitio",
+    "site",
+    "sites",
+    "reserve",
+    "reserva",
+    "natural",
+    "monument",
+    "monumento",
+    "parque",
+    "park",
+    "ruinas",
+    "ruins",
+    "ciudad",
+    "prehispanica",
+    "prehispanico",
+    "maya",
+    "de",
+    "del",
+    "la",
+    "las",
+    "el",
+    "los",
+    "the",
+}
 
 load_dotenv(REPO_ROOT / ".env")
 
@@ -68,6 +107,7 @@ class NormalizationResult:
     duplicate_slug_count: int
     duplicate_coordinate_count: int
     subfeature_filtered_count: int
+    review_candidate_count: int
 
 
 def parse_args() -> argparse.Namespace:
@@ -132,6 +172,40 @@ def normalize_rows(*datasets: list[HarvestRow]) -> list[HarvestRow]:
 
 def normalize_text(value: str) -> str:
     return " ".join(value.strip().lower().split())
+
+
+def normalize_ascii_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    return "".join(char for char in normalized if not unicodedata.combining(char))
+
+
+def tokenize_name(value: str) -> list[str]:
+    ascii_text = normalize_ascii_text(normalize_text(value))
+    cleaned = re.sub(r"[^a-z0-9]+", " ", ascii_text)
+    return [token for token in cleaned.split() if token]
+
+
+def significant_name_tokens(value: str) -> set[str]:
+    return {
+        token
+        for token in tokenize_name(value)
+        if len(token) >= 3 and token not in GENERIC_NAME_TOKENS
+    }
+
+
+def comparable_name(value: str) -> str:
+    significant_tokens = sorted(significant_name_tokens(value))
+    if significant_tokens:
+        return " ".join(significant_tokens)
+    return " ".join(tokenize_name(value))
+
+
+def similarity_score(left: str, right: str) -> float:
+    return SequenceMatcher(None, comparable_name(left), comparable_name(right)).ratio()
+
+
+def has_shared_distinctive_tokens(left: str, right: str) -> bool:
+    return bool(significant_name_tokens(left) & significant_name_tokens(right))
 
 
 def looks_like_canonical_site(name: str) -> bool:
@@ -217,7 +291,89 @@ def normalize_rows_with_report(*datasets: list[HarvestRow]) -> NormalizationResu
         duplicate_slug_count=duplicate_slug_count,
         duplicate_coordinate_count=duplicate_coordinate_count,
         subfeature_filtered_count=subfeature_filtered_count,
+        review_candidate_count=0,
     )
+
+
+def find_review_candidates(rows: list[HarvestRow]) -> list[dict[str, str]]:
+    candidates: list[dict[str, str]] = []
+
+    for index, left in enumerate(rows):
+        for right in rows[index + 1 :]:
+            if left.source == right.source:
+                continue
+            if left.slug == right.slug:
+                continue
+
+            lon_diff = abs(left.longitude - right.longitude)
+            lat_diff = abs(left.latitude - right.latitude)
+            if lon_diff > 0.02 or lat_diff > 0.02:
+                continue
+
+            score = similarity_score(left.display_name, right.display_name)
+            left_name = comparable_name(left.display_name)
+            right_name = comparable_name(right.display_name)
+            same_name_family = (
+                left_name in right_name or right_name in left_name
+            )
+            shared_tokens = has_shared_distinctive_tokens(
+                left.display_name, right.display_name
+            )
+            if not shared_tokens:
+                continue
+            if score < 0.78 and not same_name_family:
+                continue
+
+            reason = "high_similarity_near_match"
+            if same_name_family and score < 0.78:
+                reason = "name_family_near_match"
+
+            candidates.append(
+                {
+                    "left_slug": left.slug,
+                    "left_name": left.display_name,
+                    "left_source": left.source,
+                    "left_longitude": str(left.longitude),
+                    "left_latitude": str(left.latitude),
+                    "right_slug": right.slug,
+                    "right_name": right.display_name,
+                    "right_source": right.source,
+                    "right_longitude": str(right.longitude),
+                    "right_latitude": str(right.latitude),
+                    "name_similarity": f"{score:.3f}",
+                    "longitude_delta": f"{lon_diff:.6f}",
+                    "latitude_delta": f"{lat_diff:.6f}",
+                    "reason": reason,
+                }
+            )
+
+    return candidates
+
+
+def write_review_candidates(candidates: list[dict[str, str]], output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "left_slug",
+        "left_name",
+        "left_source",
+        "left_longitude",
+        "left_latitude",
+        "right_slug",
+        "right_name",
+        "right_source",
+        "right_longitude",
+        "right_latitude",
+        "name_similarity",
+        "longitude_delta",
+        "latitude_delta",
+        "reason",
+    ]
+
+    with output_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for candidate in candidates:
+            writer.writerow(candidate)
 
 
 def write_curated_csv(rows: list[HarvestRow], output_path: Path) -> None:
@@ -276,6 +432,8 @@ def print_summary(
     )
     print(f"- curated rows written: {len(normalization.rows)}")
     print(f"- curated file: {CURATED_OUTPUT}")
+    print(f"- review candidates written: {normalization.review_candidate_count}")
+    print(f"- review candidate file: {REVIEW_OUTPUT}")
 
 
 def run_sql_import(normalized_file: Path) -> None:
@@ -351,7 +509,16 @@ def main() -> None:
 
     raw_rows = [*osm_rows, *wikidata_rows]
     normalization = normalize_rows_with_report(osm_rows, wikidata_rows)
+    review_candidates = find_review_candidates(normalization.rows)
+    normalization = NormalizationResult(
+        rows=normalization.rows,
+        duplicate_slug_count=normalization.duplicate_slug_count,
+        duplicate_coordinate_count=normalization.duplicate_coordinate_count,
+        subfeature_filtered_count=normalization.subfeature_filtered_count,
+        review_candidate_count=len(review_candidates),
+    )
     write_curated_csv(normalization.rows, CURATED_OUTPUT)
+    write_review_candidates(review_candidates, REVIEW_OUTPUT)
     print_summary(raw_rows, normalization)
 
     if not args.skip_import:

@@ -1,9 +1,7 @@
 canonical_name,display_name,slug,longitude,latitude,site_type,country_code,short_description,source
 Acanceh,Acanceh,acanceh,-89.452222222,20.813333333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Acanmul,Acanmul,acanmul,-90.32555556,19.90361111,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Acropolis,Acropolis,acropolis,-90.5491167,14.6327635,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Acrópolis Central,Acrópolis Central,acrópolis-central,-89.6230176,17.221227,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Acrópolis del Norte,Acrópolis del Norte,acrópolis-del-norte,-89.6234549,17.2227068,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Acrópolis central,Acrópolis central,acrópolis-central,-89.9181122,17.753097,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Acrópolis Sur,Acrópolis Sur,acrópolis-sur,-89.6246613,17.2199303,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Acrópolis-Conjunto Cobá,Acrópolis-Conjunto Cobá,acrópolis-conjunto-cobá,-87.7318707,20.4896916,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Actun Tunichil Muknal,Actun Tunichil Muknal,actun-tunichil-muknal,-88.862352544,17.114128567,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -21,7 +19,6 @@ All Pines Village,All Pines Village,all-pines-village,-88.2942711,16.7904919,arc
 Altar de los Sacrificios,Altar de los Sacrificios,altar-de-los-sacrificios,-90.5295385,16.4794188,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Altar de Sacrificios,Altar de Sacrificios,altar-de-sacrificios,-90.533,16.467,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Altun Ha,Altun Ha,altun-ha,-88.347498094,17.76463547,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Altún Ha,Altún Ha,altún-ha,-88.3470377,17.764473,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Antigua estación de Chicxulub Pueblo,Antigua estación de Chicxulub Pueblo,antigua-estación-de-chicxulub-pueblo,-89.524219,21.1363777,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Antigua estación de Hunabchén,Antigua estación de Hunabchén,antigua-estación-de-hunabchén,-89.5150599,20.5318869,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Antigua estación de Texán de Palomeque,Antigua estación de Texán de Palomeque,antigua-estación-de-texán-de-palomeque,-89.830497,20.9291657,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -31,9 +28,6 @@ Antigua Penitenciaria Central,Antigua Penitenciaria Central,antigua-penitenciari
 Antigua Plataforma Giratoria,Antigua Plataforma Giratoria,antigua-plataforma-giratoria,-89.6127364,20.9780054,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Antiguo Casino Militar de Santa Ana,Antiguo Casino Militar de Santa Ana,antiguo-casino-militar-de-santa-ana,-89.5572743,13.9871325,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Antiguo Puente Cuscatlan,Antiguo Puente Cuscatlan,antiguo-puente-cuscatlan,-88.5638278,13.6164936,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Area 1,Area 1,area-1,-89.3558414,13.8273389,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Area 2,Area 2,area-2,-89.3564249,13.8273112,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Area 3 y 4,Area 3 y 4,area-3-y-4,-89.3565254,13.8276606,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Arqueológico de Granjas,Arqueológico de Granjas,arqueológico-de-granjas,-89.5911046,20.9372489,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Arroyo de Piedra,Arroyo de Piedra,arroyo-de-piedra,-90.26,16.46,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Baking Pot,Baking Pot,baking-pot,-89.01944444,17.20305556,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -80,7 +74,6 @@ Centauro del Norte,Centauro del Norte,centauro-del-norte,-89.4660103,18.4331198,
 Centro Cultural CECIJEMA,Centro Cultural CECIJEMA,centro-cultural-cecijema,-88.5838668,20.6943228,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Cerro Quiac,Cerro Quiac,cerro-quiac,-91.440715,14.838993,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Cerros,Cerros,cerros,-88.350555555,18.353888888,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Chac-hal-al,Chac-hal-al,chac-hal-al,-87.234954,20.4942084,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Chacchoben,Chacchoben,chacchoben,-88.2325,19.00083333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Chacmultun,Chacmultun,chacmultun,-89.34494444,20.17266667,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Chactún,Chactún,chactún,-89.508055555,18.455,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -116,20 +109,17 @@ Ciudad Vieja,Ciudad Vieja,ciudad-vieja,-89.0325,13.859444444,archaeological_site
 Cival,Cival,cival,-89.259166666,17.3675,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Coba,Coba,coba,-87.7251,20.4898,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Commerce Bight Village,Commerce Bight Village,commerce-bight-village,-88.3139335,16.8691604,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Complejo Arqueológico Cihuatán,Complejo Arqueológico Cihuatán,complejo-arqueológico-cihuatán,-89.1651694,13.9810814,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Complejo de Pirámides Gemelas N,Complejo de Pirámides Gemelas N,complejo-de-pirámides-gemelas-n,-89.6287382,17.2224973,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 complejo Pava,complejo Pava,complejo-pava,-89.9060531,17.7515179,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Complejo Puma,Complejo Puma,complejo-puma,-89.9069119,17.7542018,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Conjunto de Las Pinturas,Conjunto de Las Pinturas,conjunto-de-las-pinturas,-87.7251869,20.4901426,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto de Palacios,Conjunto de Palacios,conjunto-de-palacios,-87.4294574,20.2133557,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto F,Conjunto F,conjunto-f,-89.6193574,17.2225128,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto G,Conjunto G,conjunto-g,-89.6200646,17.2189332,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto H,Conjunto H,conjunto-h,-89.6217979,17.2292139,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto L,Conjunto L,conjunto-l,-89.6312219,17.2202415,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto M,Conjunto M,conjunto-m,-89.6238912,17.2290978,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Conjunto N,Conjunto N,conjunto-n,-89.6286144,17.2221391,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto O,Conjunto O,conjunto-o,-89.6233013,17.2251388,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Conjunto P,Conjunto P,conjunto-p,-89.6219842,17.2293163,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Conjunto P,Conjunto P,conjunto-p,-89.6226106,17.2294758,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto Q,Conjunto Q,conjunto-q,-89.6192168,17.2252594,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Conjunto R,Conjunto R,conjunto-r,-89.6207314,17.2256376,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Convento de Santa Clara,Convento de Santa Clara,convento-de-santa-clara,-90.7307378,14.5550536,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -151,49 +141,36 @@ Edificio 41,Edificio 41,edificio-41,-90.9665351,16.8965335,archaeological_site,,
 Edzna,Edzna,edzna,-90.229083,19.596778,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Ek' Balam,Ek' Balam,ek-balam,-88.13626389,20.89108611,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Alamo,El Alamo,el-alamo,-86.8465425,20.5002518,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-El Altar,El Altar,el-altar,-86.8463781,20.5000911,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Arco,El Arco,el-arco,-86.8454084,20.5005578,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Baúl,El Baúl,el-baúl,-91.02222222,14.35833333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-El Castillo,El Castillo,el-castillo,-87.4289255,20.2146521,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Cayo,El Cayo,el-cayo,-91.216712,17.059995,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Cedral,El Cedral,el-cedral,-86.9935709,20.3668268,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-El Ceilo,El Ceilo,el-ceilo,-86.8461325,20.5000644,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-El Cerrito,El Cerrito,el-cerrito,-86.8462583,20.4998527,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Chal,El Chal,el-chal,-89.65,16.63333333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Chircal - Cerro David,El Chircal - Cerro David,el-chircal-cerro-david,-87.6502623,14.3637592,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-El Chircal - Escalinata,El Chircal - Escalinata,el-chircal-escalinata,-87.6476311,14.3637241,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-El Culebra,El Culebra,el-culebra,-86.8452256,20.4995022,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Cuyo,El Cuyo,el-cuyo,-92.1342049,18.0892618,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Lagartero,El Lagartero,el-lagartero,-91.88388889,15.8275,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-El Lina,El Lina,el-lina,-86.8452837,20.5000456,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Meco,El Meco,el-meco,-86.804167028,21.210830526,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Mirador,El Mirador,el-mirador,-89.920430555,17.75505,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-El Monta,El Monta,el-monta,-86.8462005,20.4999362,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Mulato,El Mulato,el-mulato,-90.5552792,14.5833975,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Naranjo,El Naranjo,el-naranjo,-89.2599189,17.1341724,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-El Palacio,El Palacio,el-palacio,-86.8466314,20.5000229,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Palma,El Palma,el-palma,-90.744719,16.367212,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Palmar,El Palmar,el-palmar,-89.3428241,18.0762558,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Palmar (Maya site),El Palmar (Maya site),el-palmar-maya-site,-89.337222222,18.077777777,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Perú,El Perú,el-perú,-90.380587,17.278341,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Pilar,El Pilar,el-pilar,-89.150558795,17.248157947,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Puente,El Puente,el-puente,-88.792166666,15.110277777,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-El Resbalón,El Resbalón,el-resbalón,-88.7866521,18.7711743,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 El Rey archaeological site,El Rey archaeological site,el-rey-archaeological-site,-86.78111111,21.06083333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Tintal,El Tintal,el-tintal,-89.99583,17.57444,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 El Zotz,El Zotz,el-zotz,-89.8,17.28333333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Escalera basal,Escalera basal,escalera-basal,-89.9070497,17.7523531,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estela 1,Estela 1,estela-1,-87.7244642,20.4859401,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estela 10,Estela 10,estela-10,-87.7322968,20.4903997,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Estela 11,Estela 11,estela-11,-87.731975,20.4899473,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estela 26,Estela 26,estela-26,-87.7261547,20.4902491,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Estela 28,Estela 28,estela-28,-87.72657,20.490398,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Estela 9,Estela 9,estela-9,-87.7323215,20.4902825,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estructura,Estructura,estructura,-87.7259916,20.4919597,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estructura 1,Estructura 1,estructura-1,-89.6732434,13.9883571,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estructura 2,Estructura 2,estructura-2,-89.6725438,13.9882045,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Estructura 3,Estructura 3,estructura-3,-89.6724476,13.9886181,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Estructura 4,Estructura 4,estructura-4,-89.6718886,13.9883971,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Estructura 3,Estructura 3,estructura-3,-91.5060079,15.3093237,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Estructura 4,Estructura 4,estructura-4,-88.6650176,18.6865879,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estructura 5,Estructura 5,estructura-5,-89.6725306,13.9894204,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estructura 6,Estructura 6,estructura-6,-89.6718439,13.9898835,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Estuctura Maya - San Pedro Cholul,Estuctura Maya - San Pedro Cholul,estuctura-maya-san-pedro-cholul,-89.5582348,21.0287033,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -203,8 +180,6 @@ Fort Barlee,Fort Barlee,fort-barlee,-88.3872535,18.3922945,archaeological_site,,
 Gavillan,Gavillan,gavillan,-89.9090892,17.7538008,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Graciela,Graciela,graciela,-90.466666666,14.516666666,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Gran Palacio,Gran Palacio,gran-palacio,-87.429302,20.2152759,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Group Q East Pyramid,Group Q East Pyramid,group-q-east-pyramid,-89.6189189,17.2251465,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Group Q Stela Enclosure,Group Q Stela Enclosure,group-q-stela-enclosure,-89.6193527,17.2256099,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Group Q West Pyramid,Group Q West Pyramid,group-q-west-pyramid,-89.6198854,17.2252678,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Grupo A,Grupo A,grupo-a,-89.7287917,17.7949127,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Grupo B,Grupo B,grupo-b,-89.7261845,17.7940342,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -214,7 +189,6 @@ Grupo de las Mil Columnas,Grupo de las Mil Columnas,grupo-de-las-mil-columnas,-8
 Grupo Macanxoc,Grupo Macanxoc,grupo-macanxoc,-87.7217095,20.4831903,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Gruta del Espíritu Santo,Gruta del Espíritu Santo,gruta-del-espíritu-santo,-87.9651331,13.8212676,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Gruta El Gigante,Gruta El Gigante,gruta-el-gigante,-88.0574087,14.2280445,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Grutas de Balankanche,Grutas de Balankanche,grutas-de-balankanche,-88.5347926,20.6585786,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Grutas de Loltún,Grutas de Loltún,grutas-de-loltún,-89.4557932,20.2535588,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Guinea Grass,Guinea Grass,guinea-grass,-88.63437,17.89474,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Hacienda de Misnebalam,Hacienda de Misnebalam,hacienda-de-misnebalam,-89.5948404,21.1507172,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -246,7 +220,6 @@ Ixtonton,Ixtonton,ixtonton,-89.39024722,16.50436944,archaeological_site,,Archaeo
 Ixtutz,Ixtutz,ixtutz,-89.282,16.2856,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Izapa,Izapa,izapa,-92.17982222,14.92340556,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Izapa (grupo A),Izapa (grupo A),izapa-grupo-a,-92.1843261,14.9135073,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Izapa (grupo F),Izapa (grupo F),izapa-grupo-f,-92.1799581,14.9233002,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 izapa grupo B,izapa grupo B,izapa-grupo-b,-92.1814091,14.9144409,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Jacinto Creek,Jacinto Creek,jacinto-creek,-88.803055555,16.204166666,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Jaguar Temple,Jaguar Temple,jaguar-temple,-88.6530117,17.7646794,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -272,13 +245,10 @@ Kohunlich,Kohunlich,kohunlich,-88.78333333,18.41666667,archaeological_site,,Arch
 Komchén,Komchén,komchén,-89.6455177,21.1142279,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Kuh Nabaat,Kuh Nabaat,kuh-nabaat,-91.621536,17.125869,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Kukab,Kukab,kukab,-89.412083,20.926389,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Kulubá,Kulubá,kulubá,-87.8462211,21.1148581,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 La Amelia,La Amelia,la-amelia,-90.42277778,16.52638889,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 La Blanca,La Blanca,la-blanca,-92.1386684,14.5951524,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 La Corona,La Corona,la-corona,-90.372222222,17.519722222,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 La Florida,La Florida,la-florida,-89.9990919,17.5201773,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-La Gran Plaza,La Gran Plaza,la-gran-plaza,-89.6236201,17.2220144,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-La Iglesia,La Iglesia,la-iglesia,-87.7318191,20.4899488,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 La Milpa,La Milpa,la-milpa,-88.95,17.78333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 La Muralla,La Muralla,la-muralla,-89.7790863,17.7284179,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 La Palangana,La Palangana,la-palangana,-90.5475562,14.6309692,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -296,24 +266,16 @@ Laí,Laí,laí,-89.8785094,20.9796264,archaeological_site,,Archaeological site r
 Limones (Maya site),Limones (Maya site),limones-maya-site,-88.1101284,19.0213607,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Los Alacranes,Los Alacranes,los-alacranes,-89.209722222,17.982222222,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Los Arcos,Los Arcos,los-arcos,-91.8166968,15.101993,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Los Murales,Los Murales,los-murales,-86.8465805,20.5001711,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Los Naranjos,Los Naranjos,los-naranjos,-88.02273,14.94155,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Lubaantun,Lubaantun,lubaantun,-88.965,16.281111,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Lynam Prison,Lynam Prison,lynam-prison,-88.3512596,16.976759,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 M10,M10,m10,-88.9200678,17.4078822,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-M11,M11,m11,-88.9202908,17.407618,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-M16,M16,m16,-88.9196831,17.408374,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 M21,M21,m21,-88.9187216,17.4085795,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 M22,M22,m22,-88.9183754,17.4092108,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 M27,M27,m27,-88.9176447,17.4095925,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-M28,M28,m28,-88.9179754,17.4092108,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-M29,M29,m29,-88.9180216,17.4089245,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-M7,M7,m7,-88.9176908,17.409776,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Machaquila,Machaquila,machaquila,-89.86,16.32,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Macoba,Macoba,macoba,-89.3559249,19.5610796,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Manitas,Manitas,manitas,-86.8451157,20.4995851,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Marco Gonzalez,Marco Gonzalez,marco-gonzalez,-88.014886955,17.881997703,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Marco Gonzalez Archaeological Reserve,Marco Gonzalez Archaeological Reserve,marco-gonzalez-archaeological-reserve,-88.0145566,17.8821244,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Mask Temple,Mask Temple,mask-temple,-88.6496895,17.7694575,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Maya Ruins of Tulum,Maya Ruins of Tulum,maya-ruins-of-tulum,-87.428888888,20.214722222,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Mayapan,Mayapan,mayapan,-89.460555555,20.629444444,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -331,9 +293,7 @@ Mundo Perdido,Mundo Perdido,mundo-perdido,-89.62793333,17.22004722,archaeologica
 Munic Ná,Munic Ná,munic-ná,-91.6368384,17.1297486,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Murciélagos y Pet Nah,Murciélagos y Pet Nah,murciélagos-y-pet-nah,-86.8461259,20.5039138,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Muyil,Muyil,muyil,-87.61388889,20.07888889,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Muyil - Chunyaxché,Muyil - Chunyaxché,muyil-chunyaxché,-87.6111737,20.0792926,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Naachtun,Naachtun,naachtun,-89.728472222,17.794055555,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Naachtún,Naachtún,naachtún,-89.7287285,17.7946703,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Nabitunich,Nabitunich,nabitunich,-89.1346932,17.0989453,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Nadzca'an,Nadzca'an,nadzcaan,-89.851527777,18.606972222,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Nakbe,Nakbe,nakbe,-89.86855556,17.6775,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -360,14 +320,12 @@ Pacbitun,Pacbitun,pacbitun,-88.995,17.092,archaeological_site,,Archaeological si
 Paixban,Paixban,paixban,-90.1078157,17.7941011,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Palacio de los Murciélagos,Palacio de los Murciélagos,palacio-de-los-murciélagos,-89.6276031,17.2219681,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Palenque,Palenque,palenque,-92.046388888,17.484166666,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Parque Arqueológico Casa Blanca,Parque Arqueológico Casa Blanca,parque-arqueológico-casa-blanca,-89.6722127,13.9889979,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Parque Arqueológico El Puente,Parque Arqueológico El Puente,parque-arqueológico-el-puente,-88.7881798,15.1109584,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Parque Arqueológico K'íiwik,Parque Arqueológico K'íiwik,parque-arqueológico-kíiwik,-89.5912007,21.0226594,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Parque Arqueológico San Andrés,Parque Arqueológico San Andrés,parque-arqueológico-san-andrés,-89.3885255,13.8007593,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Parque Eco-Arqueológico Los Naranjos,Parque Eco-Arqueológico Los Naranjos,parque-eco-arqueológico-los-naranjos,-88.0259867,14.9356909,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Parroquia San Sebastián,Parroquia San Sebastián,parroquia-san-sebastián,-90.7364458,14.5642576,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Paso de la Amada,Paso de la Amada,paso-de-la-amada,-92.490722222,14.876527777,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Pava,Pava,pava,-89.9060249,17.751155,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Petroglifos y Arte Rupestre Piedras Pintadas,Petroglifos y Arte Rupestre Piedras Pintadas,petroglifos-y-arte-rupestre-piedras-pintadas,-86.6633156,13.608689,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Petén Basin,Petén Basin,petén-basin,-89.9,16.9,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Piedras Negras,Piedras Negras,piedras-negras,-91.2625,17.166666666,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -378,7 +336,6 @@ Plaza 3 Waka Peru,Plaza 3 Waka Peru,plaza-3-waka-peru,-90.3571415,17.2674463,arc
 Plaza Copal,Plaza Copal,plaza-copal,-89.1455397,17.2523088,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Plaza Duende,Plaza Duende,plaza-duende,-89.1451447,17.2531227,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Plaza Gumbolimbo,Plaza Gumbolimbo,plaza-gumbolimbo,-89.1454703,17.2550104,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Plaza Ixim,Plaza Ixim,plaza-ixim,-89.1457072,17.2554717,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Plaza Lec,Plaza Lec,plaza-lec,-89.1460203,17.2560329,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Plaza of the Seven Temples,Plaza of the Seven Temples,plaza-of-the-seven-temples,-89.625775,17.21963056,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Pok Ta Pok,Pok Ta Pok,pok-ta-pok,-86.766472222,21.125388888,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -401,7 +358,6 @@ Q109042466,Q109042466,q109042466,-92.1,14.5,archaeological_site,,Archaeological 
 Q123092050,Q123092050,q123092050,-86.778888299,21.071038369,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Q1274821,Q1274821,q1274821,-89.77,19.72694444,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Q14205918,Q14205918,q14205918,-87.23389,20.49194,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Q1456706,Q1456706,q1456706,-89.851448,18.60665,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Q21867199,Q21867199,q21867199,-88.333333333,17.633333333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Q21867383,Q21867383,q21867383,-89.0,16.266666666,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Q21867384,Q21867384,q21867384,-89.024444444,17.091666666,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -471,7 +427,6 @@ Q839010,Q839010,q839010,-87.44194444,20.24063889,archaeological_site,,Archaeolog
 Quelepa,Quelepa,quelepa,-88.22166667,13.52944444,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Quiché' Kingdom of Q'umarkaj,Quiché' Kingdom of Q'umarkaj,quiché-kingdom-of-qumarkaj,-91.171944444,15.023333333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Quiriguá,Quiriguá,quiriguá,-89.040277777,15.269444444,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Qʼumarkaj,Qʼumarkaj,qʼumarkaj,-91.171989,15.023528,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Rancho Ina,Rancho Ina,rancho-ina,-87.138103,20.580437,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Reserva Arqueológica El Pilar,Reserva Arqueológica El Pilar,reserva-arqueológica-el-pilar,-89.1664725,17.2503818,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Reserva Ecológica Salvador Alvarado Sur,Reserva Ecológica Salvador Alvarado Sur,reserva-ecológica-salvador-alvarado-sur,-89.5990264,20.9345525,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -480,7 +435,6 @@ Rio Amarillo,Rio Amarillo,rio-amarillo,-89.003055555,14.889444444,archaeological
 Royal Complex N10-17 29,Royal Complex N10-17 29,royal-complex-n10-17-29,-88.6526477,17.7655872,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Ruinas de Copán,Ruinas de Copán,ruinas-de-copán,-89.143437,14.8376246,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Ruinas de la Catedral de San José,Ruinas de la Catedral de San José,ruinas-de-la-catedral-de-san-josé,-90.7325682,14.5567373,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Ruinas el Lagartero,Ruinas el Lagartero,ruinas-el-lagartero,-91.8839028,15.8273652,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Ruinas Mayas Chichankanab,Ruinas Mayas Chichankanab,ruinas-mayas-chichankanab,-88.7637527,19.871437,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 RUINAS MAYAS DZOYOLA,RUINAS MAYAS DZOYOLA,ruinas-mayas-dzoyola,-88.4581366,19.9654883,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Ruinas mayas Santa Elena Dziuche,Ruinas mayas Santa Elena Dziuche,ruinas-mayas-santa-elena-dziuche,-88.8127092,19.878106,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -501,7 +455,6 @@ San José Chactún,San José Chactún,san-josé-chactún,-90.00972222,20.5238888
 Sanjol,Sanjol,sanjol,-89.9103338,17.7525031,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Santa Elena Poco Uinic,Santa Elena Poco Uinic,santa-elena-poco-uinic,-91.739021,16.587477,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Santa Isabel,Santa Isabel,santa-isabel,-90.444246111,14.468748055,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Santa Rita Archaeological Site,Santa Rita Archaeological Site,santa-rita-archaeological-site,-88.3950493,18.4022985,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Santa Rita Corozal,Santa Rita Corozal,santa-rita-corozal,-88.395,18.40222222,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Santa Rosa,Santa Rosa,santa-rosa,-89.1980276,16.2733014,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Santiago Jalacte,Santiago Jalacte,santiago-jalacte,-89.2009999,16.2465145,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -524,7 +477,6 @@ Sitio Arqueológico Cuajimalpa,Sitio Arqueológico Cuajimalpa,sitio-arqueológic
 Sitio Arqueológico Cuatro Caminos,Sitio Arqueológico Cuatro Caminos,sitio-arqueológico-cuatro-caminos,-91.2631112,17.8532288,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico de Finca Rosita,Sitio Arqueológico de Finca Rosita,sitio-arqueológico-de-finca-rosita,-89.5607244,13.9723425,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico de Piedras Negras,Sitio Arqueológico de Piedras Negras,sitio-arqueológico-de-piedras-negras,-91.2618411,17.1683877,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Sitio Arqueológico de Reforma,Sitio Arqueológico de Reforma,sitio-arqueológico-de-reforma,-91.2978861,17.7690184,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico El Arenal,Sitio Arqueológico El Arenal,sitio-arqueológico-el-arenal,-91.566811,17.643091,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico El Atascadero,Sitio Arqueológico El Atascadero,sitio-arqueológico-el-atascadero,-91.3395488,17.7127202,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico El Bilín I,Sitio Arqueológico El Bilín I,sitio-arqueológico-el-bilín-i,-91.3595527,17.6148758,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -543,7 +495,6 @@ Sitio Arqueológico El Pimiental,Sitio Arqueológico El Pimiental,sitio-arqueol�
 Sitio Arqueológico El Xote,Sitio Arqueológico El Xote,sitio-arqueológico-el-xote,-91.3409489,17.6311494,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Genovevo de la O.,Sitio Arqueológico Genovevo de la O.,sitio-arqueológico-genovevo-de-la-o,-91.3665533,17.5587326,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Josefa Ruiz,Sitio Arqueológico Josefa Ruiz,sitio-arqueológico-josefa-ruiz,-91.3603789,17.5289741,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Sitio Arqueológico Joya de Cerén,Sitio Arqueológico Joya de Cerén,sitio-arqueológico-joya-de-cerén,-89.356521,13.8276624,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico La Calavera,Sitio Arqueológico La Calavera,sitio-arqueológico-la-calavera,-91.2842095,17.7357091,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico La Entrada,Sitio Arqueológico La Entrada,sitio-arqueológico-la-entrada,-91.3879842,17.5360587,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico La Lluvia,Sitio Arqueológico La Lluvia,sitio-arqueológico-la-lluvia,-91.3130164,17.5561038,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -558,9 +509,7 @@ Sitio Arqueológico Manuel Castillo,Sitio Arqueológico Manuel Castillo,sitio-ar
 Sitio arqueológico Nakum,Sitio arqueológico Nakum,sitio-arqueológico-nakum,-89.4054427,17.1763986,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Nueva Esperanza,Sitio Arqueológico Nueva Esperanza,sitio-arqueológico-nueva-esperanza,-91.089524,17.3578067,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Otilio Montaño,Sitio Arqueológico Otilio Montaño,sitio-arqueológico-otilio-montaño,-91.3608027,17.5673094,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Sitio Arqueológico Pomaná,Sitio Arqueológico Pomaná,sitio-arqueológico-pomaná,-91.5702993,17.4848798,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Poza Rica,Sitio Arqueológico Poza Rica,sitio-arqueológico-poza-rica,-91.3618165,17.6821131,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Sitio Arqueológico Q'umarkaj,Sitio Arqueológico Q'umarkaj,sitio-arqueológico-qumarkaj,-91.1719006,15.0234118,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Ranchería El Sibalito,Sitio Arqueológico Ranchería El Sibalito,sitio-arqueológico-ranchería-el-sibalito,-91.2134206,17.7376507,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Rio Azul,Sitio Arqueológico Rio Azul,sitio-arqueológico-rio-azul,-89.2819095,17.777675,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico San Claudio,Sitio Arqueológico San Claudio,sitio-arqueológico-san-claudio,-91.1594439,17.3368232,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -569,24 +518,12 @@ Sitio Arqueológico Santo Domingo,Sitio Arqueológico Santo Domingo,sitio-arqueo
 Sitio Arqueológico Zacatonal,Sitio Arqueológico Zacatonal,sitio-arqueológico-zacatonal,-91.3596976,17.6572081,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológico Zapote Bobal,Sitio Arqueológico Zapote Bobal,sitio-arqueológico-zapote-bobal,-90.3003049,17.3075494,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sitio Arqueológicol Tiradero,Sitio Arqueológicol Tiradero,sitio-arqueológicol-tiradero,-91.1565347,17.7828188,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Stela,Stela,stela,-87.73246,20.4906196,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Structure 5C-42,Structure 5C-42,structure-5c-42,-89.6275237,17.2213091,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Structure 5C-44,Structure 5C-44,structure-5c-44,-89.6268211,17.2212423,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5C-45,Structure 5C-45,structure-5c-45,-89.6272521,17.220845,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Structure 5C-46,Structure 5C-46,structure-5c-46,-89.6275002,17.220724,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5C-47,Structure 5C-47,structure-5c-47,-89.6275875,17.2209308,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Structure 5D-15,Structure 5D-15,structure-5d-15,-89.6245245,17.2232908,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-76,Structure 5D-76,structure-5d-76,-89.6267498,17.2210333,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Structure 5D-77,Structure 5D-77,structure-5d-77,-89.626614,17.2206842,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Structure 5D-82,Structure 5D-82,structure-5d-82,-89.6260157,17.2206455,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-89,Structure 5D-89,structure-5d-89,-89.6260898,17.2192347,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-93,Structure 5D-93,structure-5d-93,-89.625412,17.2193149,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-94,Structure 5D-94,structure-5d-94,-89.625399,17.2194345,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-95,Structure 5D-95,structure-5d-95,-89.6253841,17.2195398,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-96,Structure 5D-96,structure-5d-96,-89.6253815,17.2197045,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-97,Structure 5D-97,structure-5d-97,-89.6253379,17.2198691,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-98,Structure 5D-98,structure-5d-98,-89.6253286,17.219987,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Structure 5D-99,Structure 5D-99,structure-5d-99,-89.6253161,17.2200919,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sweat Bath,Sweat Bath,sweat-bath,-88.8772862,17.4211951,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sweat House,Sweat House,sweat-house,-89.6216932,17.2218403,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Sítio arqueológico Avila,Sítio arqueológico Avila,sítio-arqueológico-avila,-89.5820588,17.1977492,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -605,7 +542,6 @@ Tayasal,Tayasal,tayasal,-89.892413,16.940251,archaeological_site,,Archaeological
 Tayazal sitio arqueológico,Tayazal sitio arqueológico,tayazal-sitio-arqueológico,-89.8916622,16.9392088,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Tazumal,Tazumal,tazumal,-89.674416666,13.979555555,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Teleferico San Jacinto,Teleferico San Jacinto,teleferico-san-jacinto,-89.161523,13.6787456,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Temple 5C-49,Temple 5C-49,temple-5c-49,-89.6279747,17.2206852,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Temple of Ixchel,Temple of Ixchel,temple-of-ixchel,-86.710859,21.202012,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Templo,Templo,templo,-87.4296439,20.213914,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Templo de la Serpiente Bicéfala,Templo de la Serpiente Bicéfala,templo-de-la-serpiente-bicéfala,-89.6298775,17.2237059,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -626,7 +562,6 @@ Toniná,Toniná,toniná,-92.009675,16.901219444,archaeological_site,,Archaeologi
 Topoxte,Topoxte,topoxte,-89.48333,17.08333,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Topoxté,Topoxté,topoxté,-89.4301734,17.0606912,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Tortuguero,Tortuguero,tortuguero,-92.5681,17.6869,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
-Tortuguero (sitio arqueológico),Tortuguero (sitio arqueológico),tortuguero-sitio-arqueológico,-92.5676613,17.6871568,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Tres Islas,Tres Islas,tres-islas,-90.05,16.2,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Tumba del Caracol,Tumba del Caracol,tumba-del-caracol,-86.9792342,20.2801287,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Tz'ib'ana,Tz'ib'ana,tzibana,-91.6299681,17.1256819,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -659,7 +594,6 @@ Xcaret,Xcaret,xcaret,-87.119166666,20.578055555,archaeological_site,,Archaeologi
 Xcombo,Xcombo,xcombo,-89.3523716,21.3132176,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Xelha,Xelha,xelha,-87.366944444,20.319722222,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Xet Pool,Xet Pool,xet-pool,-89.3390708,20.1695315,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Xkambó,Xkambó,xkambó,-89.3523754,21.3132769,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Xkipche,Xkipche,xkipche,-89.82611111,20.29861111,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Xlahpak,Xlahpak,xlahpak,-87.560450847,20.066813917,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
 Xlapak,Xlapak,xlapak,-89.60833333,20.17361111,archaeological_site,,Archaeological site recorded in Wikidata.,Wikidata
@@ -691,12 +625,10 @@ Zona arqueologica de Izamal (Habuk),Zona arqueologica de Izamal (Habuk),zona-arq
 Zona Arqueologica Palenque,Zona Arqueologica Palenque,zona-arqueologica-palenque,-92.0449961,17.484065,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Aguada Fénix,Zona Arqueológica Aguada Fénix,zona-arqueológica-aguada-fénix,-91.1477306,17.8037947,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Calakmul,Zona Arqueológica Calakmul,zona-arqueológica-calakmul,-89.8065528,18.108473,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica Chakanbakán,Zona Arqueológica Chakanbakán,zona-arqueológica-chakanbakán,-89.0894715,18.4519813,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Cobá,Zona Arqueológica Cobá,zona-arqueológica-cobá,-87.7262109,20.4885908,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona arqueológica de Acanceh,Zona arqueológica de Acanceh,zona-arqueológica-de-acanceh,-89.4521925,20.8135769,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Zona arqueológica de Acanceh,Zona arqueológica de Acanceh,zona-arqueológica-de-acanceh,-89.452387,20.810615,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Aké,Zona arqueológica de Aké,zona-arqueológica-de-aké,-89.3003831,20.9467213,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Balamkú,Zona arqueológica de Balamkú,zona-arqueológica-de-balamkú,-89.9449412,18.5576192,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona arqueológica de Becán,Zona arqueológica de Becán,zona-arqueológica-de-becán,-89.4670129,18.5169136,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Bonampak,Zona arqueológica de Bonampak,zona-arqueológica-de-bonampak,-91.0635678,16.7031281,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Chacchoben,Zona arqueológica de Chacchoben,zona-arqueológica-de-chacchoben,-88.2318485,19.0014402,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Chacmultún,Zona arqueológica de Chacmultún,zona-arqueológica-de-chacmultún,-89.3421076,20.1712,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
@@ -710,25 +642,16 @@ Zona arqueológica de Kabáh,Zona arqueológica de Kabáh,zona-arqueológica-de-
 Zona arqueológica de Kinichná,Zona arqueológica de Kinichná,zona-arqueológica-de-kinichná,-88.7673637,18.6608831,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica de Kohunlich,Zona Arqueológica de Kohunlich,zona-arqueológica-de-kohunlich,-88.7900896,18.4174302,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Lamay,Zona arqueológica de Lamay,zona-arqueológica-de-lamay,-88.7701258,18.6431438,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona arqueológica de Limones,Zona arqueológica de Limones,zona-arqueológica-de-limones,-88.1103388,19.0214159,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica de Mayapán,Zona Arqueológica de Mayapán,zona-arqueológica-de-mayapán,-89.4603666,20.6292414,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica de Pomoná (Pakbul),Zona Arqueológica de Pomoná (Pakbul),zona-arqueológica-de-pomoná-pakbul,-91.5706309,17.4848687,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica de San Claudio,Zona Arqueológica de San Claudio,zona-arqueológica-de-san-claudio,-91.1568123,17.3356714,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Tenam Puente,Zona arqueológica de Tenam Puente,zona-arqueológica-de-tenam-puente,-92.1061962,16.1409229,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica de Tulum,Zona Arqueológica de Tulum,zona-arqueológica-de-tulum,-87.4293745,20.2146774,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica de Tutil,Zona Arqueológica de Tutil,zona-arqueológica-de-tutil,-88.7791304,18.6428351,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica de Xlapak,Zona Arqueológica de Xlapak,zona-arqueológica-de-xlapak,-89.607699,20.1746472,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona arqueológica de Xpujil,Zona arqueológica de Xpujil,zona-arqueológica-de-xpujil,-89.4040775,18.5099665,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica de Yaxchilan,Zona arqueológica de Yaxchilan,zona-arqueológica-de-yaxchilan,-90.9657024,16.8987797,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica de Yaxchilán,Zona Arqueológica de Yaxchilán,zona-arqueológica-de-yaxchilán,-90.9676383,16.9014894,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica del Arenal,Zona Arqueológica del Arenal,zona-arqueológica-del-arenal,-91.5668124,17.6426928,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica del Tiradero,Zona Arqueológica del Tiradero,zona-arqueológica-del-tiradero,-91.1556995,17.7858819,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica Dzibilnochac,Zona Arqueológica Dzibilnochac,zona-arqueológica-dzibilnochac,-89.5949418,19.5778228,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Dzoyilá,Zona Arqueológica Dzoyilá,zona-arqueológica-dzoyilá,-89.594928,20.9378977,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica El Rey,Zona Arqueológica El Rey,zona-arqueológica-el-rey,-86.7813768,21.0611224,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica El Tabasqueño,Zona Arqueológica El Tabasqueño,zona-arqueológica-el-tabasqueño,-89.7831896,19.5000338,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona arqueológica El Tigre (Itzamkanac),Zona arqueológica El Tigre (Itzamkanac),zona-arqueológica-el-tigre-itzamkanac,-90.8367153,18.1208365,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
-Zona Arqueológica Hochob,Zona Arqueológica Hochob,zona-arqueológica-hochob,-89.7703657,19.4086039,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Hormiguero,Zona Arqueológica Hormiguero,zona-arqueológica-hormiguero,-89.4921555,18.4104236,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Kintunich,Zona Arqueológica Kintunich,zona-arqueológica-kintunich,-89.7604999,20.9983017,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
 Zona Arqueológica Moral-Reforma,Zona Arqueológica Moral-Reforma,zona-arqueológica-moral-reforma,-91.2990318,17.7691293,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap

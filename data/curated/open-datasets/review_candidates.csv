@@ -1,0 +1,63 @@
+left_slug,left_name,left_source,left_longitude,left_latitude,right_slug,right_name,right_source,right_longitude,right_latitude,name_similarity,longitude_delta,latitude_delta,reason
+acanceh,Acanceh,Wikidata,-89.452222222,20.813333333,zona-arqueológica-de-acanceh,Zona arqueológica de Acanceh,OpenStreetMap,-89.452387,20.810615,1.000,0.000165,0.002718,high_similarity_near_match
+acrópolis-conjunto-cobá,Acrópolis-Conjunto Cobá,OpenStreetMap,-87.7318707,20.4896916,coba,Coba,Wikidata,-87.7251,20.4898,0.296,0.006771,0.000108,name_family_near_match
+actun-tunichil-muknal,Actun Tunichil Muknal,Wikidata,-88.862352544,17.114128567,actun-tunichil-muknal-natural-monument,Actun Tunichil Muknal Natural Monument,OpenStreetMap,-88.8574042,17.1202032,1.000,0.004948,0.006075,high_similarity_near_match
+aguada-fénix,Aguada Fénix,Wikidata,-91.15,17.8,sitio-arqueológico-aguada-fénix,Sitio Arqueológico Aguada Fénix,OpenStreetMap,-91.1411083,17.805317,1.000,0.008892,0.005317,high_similarity_near_match
+aguada-fénix,Aguada Fénix,Wikidata,-91.15,17.8,zona-arqueológica-aguada-fénix,Zona Arqueológica Aguada Fénix,OpenStreetMap,-91.1477306,17.8037947,1.000,0.002269,0.003795,high_similarity_near_match
+ake,Ake,Wikidata,-89.300277777,20.947222222,zona-arqueológica-de-aké,Zona arqueológica de Aké,OpenStreetMap,-89.3003831,20.9467213,1.000,0.000105,0.000501,high_similarity_near_match
+altar-de-los-sacrificios,Altar de los Sacrificios,OpenStreetMap,-90.5295385,16.4794188,altar-de-sacrificios,Altar de Sacrificios,Wikidata,-90.533,16.467,1.000,0.003462,0.012419,high_similarity_near_match
+balamku,Balamku,Wikidata,-89.94436111,18.56019444,zona-arqueológica-de-balamkú,Zona arqueológica de Balamkú,OpenStreetMap,-89.9449412,18.5576192,1.000,0.000580,0.002575,high_similarity_near_match
+bonampak,Bonampak,Wikidata,-91.065,16.704,zona-arqueológica-de-bonampak,Zona arqueológica de Bonampak,OpenStreetMap,-91.0635678,16.7031281,1.000,0.001432,0.000872,high_similarity_near_match
+cahal-pech,Cahal Pech,Wikidata,-89.061111111,17.155555555,cahal-pech-archaeological-reserve,Cahal Pech Archaeological Reserve,OpenStreetMap,-89.0738578,17.1454465,1.000,0.012747,0.010109,high_similarity_near_match
+calakmul,Calakmul,Wikidata,-89.810555555,18.105,zona-arqueológica-calakmul,Zona Arqueológica Calakmul,OpenStreetMap,-89.8065528,18.108473,1.000,0.004003,0.003473,high_similarity_near_match
+cara-sucia,Cara Sucia,Wikidata,-90.03583333,13.77916667,sitio-arqueologico-de-cara-sucia,Sitio Arqueologico de Cara Sucia,OpenStreetMap,-90.0477301,13.7770938,1.000,0.011897,0.002073,high_similarity_near_match
+chacchoben,Chacchoben,Wikidata,-88.2325,19.00083333,zona-arqueológica-de-chacchoben,Zona arqueológica de Chacchoben,OpenStreetMap,-88.2318485,19.0014402,1.000,0.000652,0.000607,high_similarity_near_match
+chacmultun,Chacmultun,Wikidata,-89.34494444,20.17266667,zona-arqueológica-de-chacmultún,Zona arqueológica de Chacmultún,OpenStreetMap,-89.3421076,20.1712,1.000,0.002837,0.001467,high_similarity_near_match
+chicanná,Chicanná,Wikidata,-89.48633333,18.50691667,zona-arqueológica-de-chicanná,Zona arqueológica de Chicanná,OpenStreetMap,-89.4867584,18.5078611,1.000,0.000425,0.000944,high_similarity_near_match
+chichen-itza,Chichen Itza,Wikidata,-88.568611111,20.683055555,chichen-itzá,Chichen Itzá,OpenStreetMap,-88.5691327,20.683172,1.000,0.000522,0.000116,high_similarity_near_match
+chinkultic,Chinkultic,Wikidata,-91.785,16.129,zona-arqueológica-de-chinkultic,Zona arqueológica de Chinkultic,OpenStreetMap,-91.7838471,16.1262728,1.000,0.001153,0.002727,high_similarity_near_match
+ciudad-prehispánica-de-uxmal,Ciudad prehispánica de Uxmal,OpenStreetMap,-89.7708844,20.3594487,uxmal,Uxmal,Wikidata,-89.771388888,20.359444444,1.000,0.000504,0.000004,high_similarity_near_match
+coba,Coba,Wikidata,-87.7251,20.4898,zona-arqueológica-cobá,Zona Arqueológica Cobá,OpenStreetMap,-87.7262109,20.4885908,1.000,0.001111,0.001209,high_similarity_near_match
+copán,Copán,Wikidata,-89.142441666,14.837963888,ruinas-de-copán,Ruinas de Copán,OpenStreetMap,-89.143437,14.8376246,1.000,0.000995,0.000339,high_similarity_near_match
+dzibanche,Dzibanche,Wikidata,-88.75902778,18.6375,zona-arqueológica-de-dzibanché,Zona arqueológica de Dzibanché,OpenStreetMap,-88.759,18.6394948,1.000,0.000028,0.001995,high_similarity_near_match
+dzibilchaltun,Dzibilchaltun,Wikidata,-89.5903,21.091,zona-arqueológica-de-dzibilchaltún,Zona Arqueológica de Dzibilchaltún,OpenStreetMap,-89.5969433,21.0923234,1.000,0.006643,0.001323,high_similarity_near_match
+edzna,Edzna,Wikidata,-90.229083,19.596778,zona-arqueológica-de-edzná,Zona Arqueológica de Edzná,OpenStreetMap,-90.2330865,19.5976683,1.000,0.004003,0.000890,high_similarity_near_match
+el-chal,El Chal,Wikidata,-89.65,16.63333333,sitio-arqueológico-el-chal,Sitio Arqueológico El Chal,OpenStreetMap,-89.6535041,16.634555,1.000,0.003504,0.001222,high_similarity_near_match
+el-naranjo,El Naranjo,OpenStreetMap,-89.2599189,17.1341724,naranjo,Naranjo,Wikidata,-89.26217,17.133598,1.000,0.002251,0.000574,high_similarity_near_match
+el-palmar,El Palmar,OpenStreetMap,-89.3428241,18.0762558,el-palmar-maya-site,El Palmar (Maya site),Wikidata,-89.337222222,18.077777777,1.000,0.005602,0.001522,high_similarity_near_match
+el-perú,El Perú,Wikidata,-90.380587,17.278341,sitio-arqueológico-el-perú-waka,Sitio Arqueológico El Perú - Waka,OpenStreetMap,-90.3811404,17.2783463,0.615,0.000553,0.000005,name_family_near_match
+el-pilar,El Pilar,Wikidata,-89.150558795,17.248157947,reserva-arqueológica-el-pilar,Reserva Arqueológica El Pilar,OpenStreetMap,-89.1664725,17.2503818,1.000,0.015914,0.002224,high_similarity_near_match
+el-puente,El Puente,Wikidata,-88.792166666,15.110277777,parque-arqueológico-el-puente,Parque Arqueológico El Puente,OpenStreetMap,-88.7881798,15.1109584,1.000,0.003987,0.000681,high_similarity_near_match
+el-rey-archaeological-site,El Rey archaeological site,Wikidata,-86.78111111,21.06083333,las-ruinas-de-el-rey,las ruinas de EL REY,OpenStreetMap,-86.7814633,21.0614751,1.000,0.000352,0.000642,high_similarity_near_match
+holmul,Holmul,Wikidata,-89.256,17.3,sitio-arqueologico-nueva-holmul,Sitio Arqueologico Nueva Holmul,OpenStreetMap,-89.2526742,17.3036631,0.667,0.003326,0.003663,name_family_near_match
+hormiguero,Hormiguero,Wikidata,-89.485,18.40333,zona-arqueológica-hormiguero,Zona Arqueológica Hormiguero,OpenStreetMap,-89.4921555,18.4104236,1.000,0.007155,0.007094,high_similarity_near_match
+itzamkanac,Itzamkanac,Wikidata,-90.83691667,18.12194444,zona-arqueológica-el-tigre-itzamkanac,Zona arqueológica El Tigre (Itzamkanac),OpenStreetMap,-90.8367153,18.1208365,0.769,0.000201,0.001108,name_family_near_match
+ixlu,Ixlu,Wikidata,-89.68583333,16.97194444,ixlú,Ixlú,OpenStreetMap,-89.6866045,16.9798536,1.000,0.000771,0.007909,high_similarity_near_match
+izapa,Izapa,Wikidata,-92.17982222,14.92340556,izapa-grupo-a,Izapa (grupo A),OpenStreetMap,-92.1843261,14.9135073,0.625,0.004504,0.009898,name_family_near_match
+izapa,Izapa,Wikidata,-92.17982222,14.92340556,izapa-grupo-b,izapa grupo B,OpenStreetMap,-92.1814091,14.9144409,0.625,0.001587,0.008965,name_family_near_match
+jaina-island,Jaina Island,Wikidata,-90.484166666,20.208611111,zona-arqueológica-de-jaina,Zona Arqueológica de Jaina,OpenStreetMap,-90.4857872,20.2088087,0.588,0.001621,0.000198,name_family_near_match
+kabah,Kabah,Wikidata,-89.647297222,20.248425,zona-arqueológica-de-kabáh,Zona arqueológica de Kabáh,OpenStreetMap,-89.649208,20.2493529,1.000,0.001911,0.000928,high_similarity_near_match
+kinichna,Kinichna,Wikidata,-88.76694,18.65972,zona-arqueológica-de-kinichná,Zona arqueológica de Kinichná,OpenStreetMap,-88.7673637,18.6608831,1.000,0.000424,0.001163,high_similarity_near_match
+kohunlich,Kohunlich,Wikidata,-88.78333333,18.41666667,zona-arqueológica-de-kohunlich,Zona Arqueológica de Kohunlich,OpenStreetMap,-88.7900896,18.4174302,1.000,0.006756,0.000764,high_similarity_near_match
+labna,Labna,Wikidata,-89.579,20.1725,labná,Labná,OpenStreetMap,-89.5786769,20.1719853,1.000,0.000323,0.000515,high_similarity_near_match
+los-naranjos,Los Naranjos,Wikidata,-88.02273,14.94155,parque-eco-arqueológico-los-naranjos,Parque Eco-Arqueológico Los Naranjos,OpenStreetMap,-88.0259867,14.9356909,0.800,0.003257,0.005859,high_similarity_near_match
+moral-reforma,Moral Reforma,Wikidata,-91.29816667,17.76908333,zona-arqueológica-moral-reforma,Zona Arqueológica Moral-Reforma,OpenStreetMap,-91.2990318,17.7691293,1.000,0.000865,0.000046,high_similarity_near_match
+mundo-perdido,Mundo Perdido,Wikidata,-89.62793333,17.22004722,píramide-mundo-perdido,Píramide Mundo Perdido,OpenStreetMap,-89.6272544,17.2199966,0.743,0.000679,0.000051,name_family_near_match
+palenque,Palenque,Wikidata,-92.046388888,17.484166666,zona-arqueologica-palenque,Zona Arqueologica Palenque,OpenStreetMap,-92.0449961,17.484065,1.000,0.001393,0.000102,high_similarity_near_match
+piedras-negras,Piedras Negras,Wikidata,-91.2625,17.166666666,sitio-arqueológico-de-piedras-negras,Sitio Arqueológico de Piedras Negras,OpenStreetMap,-91.2618411,17.1683877,1.000,0.000659,0.001721,high_similarity_near_match
+río-azul,Río Azul,Wikidata,-89.28,17.779083333,sitio-arqueológico-rio-azul,Sitio Arqueológico Rio Azul,OpenStreetMap,-89.2819095,17.777675,1.000,0.001909,0.001408,high_similarity_near_match
+sitio-arqueológico-zapote-bobal,Sitio Arqueológico Zapote Bobal,OpenStreetMap,-90.3003049,17.3075494,zapote-bobal,Zapote Bobal,Wikidata,-90.306416,17.306639,1.000,0.006111,0.000910,high_similarity_near_match
+tabasqueño,Tabasqueño,Wikidata,-89.78377778,19.5,zona-arqueológica-el-tabasqueño,Zona Arqueológica El Tabasqueño,OpenStreetMap,-89.7831896,19.5000338,1.000,0.000588,0.000034,high_similarity_near_match
+tenam-puente,Tenam Puente,Wikidata,-92.09722222,16.13305556,zona-arqueológica-de-tenam-puente,Zona arqueológica de Tenam Puente,OpenStreetMap,-92.1061962,16.1409229,1.000,0.008974,0.007867,high_similarity_near_match
+uaxactun,Uaxactun,OpenStreetMap,-89.6294686,17.3912708,uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,1.000,0.005065,0.002290,high_similarity_near_match
+uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,uaxactún-grupo-a,Uaxactún Grupo A,OpenStreetMap,-89.6386276,17.3950487,0.727,0.004094,0.001488,name_family_near_match
+uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,uaxactún-grupo-b,Uaxactún Grupo B,OpenStreetMap,-89.6391074,17.3975568,0.727,0.004574,0.003996,name_family_near_match
+uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,uaxactún-grupo-c,Uaxactún Grupo C,OpenStreetMap,-89.6361798,17.4000679,0.727,0.001646,0.006507,name_family_near_match
+uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,uaxactún-grupo-d,Uaxactún Grupo D,OpenStreetMap,-89.6320365,17.3923082,0.727,0.002497,0.001253,name_family_near_match
+uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,uaxactún-grupo-e,Uaxactún Grupo E,OpenStreetMap,-89.6293955,17.3918535,0.727,0.005138,0.001708,name_family_near_match
+uaxactún,Uaxactún,Wikidata,-89.634533333,17.393561111,uaxactún-grupo-f,Uaxactún Grupo F,OpenStreetMap,-89.6320278,17.387792,0.727,0.002506,0.005769,name_family_near_match
+xlapak,Xlapak,Wikidata,-89.60833333,20.17361111,zona-arqueológica-de-xlapak,Zona Arqueológica de Xlapak,OpenStreetMap,-89.607699,20.1746472,1.000,0.000634,0.001036,high_similarity_near_match
+xunantunich,Xunantunich,Wikidata,-89.142212,17.090194,xunantunich-archaeological-reserve,Xunantunich Archaeological Reserve,OpenStreetMap,-89.1413146,17.0895319,1.000,0.000897,0.000662,high_similarity_near_match
+yaxchilan,Yaxchilan,Wikidata,-90.966666666,16.9,zona-arqueológica-de-yaxchilan,Zona arqueológica de Yaxchilan,OpenStreetMap,-90.9657024,16.8987797,1.000,0.000964,0.001220,high_similarity_near_match
+yaxchilan,Yaxchilan,Wikidata,-90.966666666,16.9,zona-arqueológica-de-yaxchilán,Zona Arqueológica de Yaxchilán,OpenStreetMap,-90.9676383,16.9014894,1.000,0.000972,0.001489,high_similarity_near_match
+yaxha,Yaxha,Wikidata,-89.4,17.07222222,yaxhá,Yaxhá,OpenStreetMap,-89.4011386,17.0747054,1.000,0.001139,0.002483,high_similarity_near_match
