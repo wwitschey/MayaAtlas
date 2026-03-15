@@ -35,7 +35,11 @@ export default function LayerPanel({ onLayerToggle }: LayerPanelProps) {
     // Only show layers that have real frontend behavior today.
     // Temporal filtering is handled by the PeriodFilter control, and the
     // other overlays below are still placeholders for future map work.
-    if (["chronology", "polity_regions", "population"].includes(layer.key)) {
+    if (
+      ["chronology", "polity_regions", "population", "elevation"].includes(
+        layer.key
+      )
+    ) {
       return false;
     }
     return true;
