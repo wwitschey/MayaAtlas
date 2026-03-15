@@ -84,6 +84,16 @@ Detailed operator instructions live in:
 
 - `docs/chat/INGESTION_RUNBOOK.md`
 
+## Deployment Notes
+
+The deployment contract and current Phase 13 audit notes live in:
+
+- `docs/chat/DEPLOYMENT_RUNBOOK.md`
+
+Development and deployment environment variables are documented in:
+
+- `.env.example`
+
 ## Current Data Sources
 
 The curated open-dataset pipeline currently draws from:
