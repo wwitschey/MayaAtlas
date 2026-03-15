@@ -171,19 +171,14 @@ export default function MapShell() {
 
   function addMainSourceAndLayers(
     map: maplibregl.Map,
-    data: GeoJSON.FeatureCollection<GeoJSON.Point>,
     clustered: boolean
   ) {
+    // For vector tiles, use vector source
     map.addSource(SOURCE_ID, {
-      type: "geojson",
-      data,
-      ...(clustered
-        ? {
-            cluster: true,
-            clusterMaxZoom: 8,
-            clusterRadius: 50,
-          }
-        : {}),
+      type: "vector",
+      tiles: [`http://localhost:8000/api/layers/1/tiles/{z}/{x}/{y}.pbf`], // layer_id 1 is sites
+      minzoom: 0,
+      maxzoom: 14
     });
 
     if (clustered) {
@@ -191,6 +186,7 @@ export default function MapShell() {
         id: CLUSTER_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
+        "source-layer": "sites",
         filter: ["has", "point_count"],
         paint: {
           "circle-color": "#7c3aed",
@@ -214,6 +210,7 @@ export default function MapShell() {
         id: CLUSTER_COUNT_LAYER_ID,
         type: "symbol",
         source: SOURCE_ID,
+        "source-layer": "sites",
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
@@ -228,6 +225,7 @@ export default function MapShell() {
         id: CIRCLE_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
+        "source-layer": "sites",
         filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-radius": 6,
@@ -241,6 +239,7 @@ export default function MapShell() {
         id: LABEL_LAYER_ID,
         type: "symbol",
         source: SOURCE_ID,
+        "source-layer": "sites",
         filter: ["!", ["has", "point_count"]],
         minzoom: 7,
         layout: {
@@ -399,7 +398,7 @@ export default function MapShell() {
     setSelectedSite(null);
 
     removeMainSourceAndLayers(map);
-    addMainSourceAndLayers(map, data, clustered);
+    addMainSourceAndLayers(map, clustered);
     wireClusterClick(map, clustered);
 
     lastLoadedViewportKeyRef.current = viewportKey;
@@ -434,11 +433,10 @@ export default function MapShell() {
 
     map.on("load", async () => {
       const initialPeriod = selectedPeriodRef.current;
-      const initialSites = await fetchVisibleTiles(map, initialPeriod);
       const clustered = !initialPeriod;
       lastLoadedViewportKeyRef.current = getRoundedViewportKey(map, initialPeriod);
 
-      addMainSourceAndLayers(map, toGeoJSON(initialSites), clustered);
+      addMainSourceAndLayers(map, clustered);
       wireClusterClick(map, clustered);
 
       map.addSource(SELECTED_SOURCE_ID, {
