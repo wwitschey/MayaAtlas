@@ -50,15 +50,25 @@ def _validate_database_url(value: str) -> str:
     return value
 
 
+def _normalize_database_url(value: str) -> str:
+    if value.startswith("postgresql+psycopg://"):
+        return value
+    if value.startswith("postgresql://"):
+        return "postgresql+psycopg://" + value.removeprefix("postgresql://")
+    if value.startswith("postgres://"):
+        return "postgresql+psycopg://" + value.removeprefix("postgres://")
+    return value
+
+
 def get_database_url() -> str:
     configured = os.getenv("DATABASE_URL", "").strip()
     if configured:
-        return _validate_database_url(configured)
+        return _normalize_database_url(_validate_database_url(configured))
 
     if _is_production():
         raise RuntimeError("DATABASE_URL is required in production.")
 
-    return LOCAL_DATABASE_URL
+    return _normalize_database_url(LOCAL_DATABASE_URL)
 
 
 def get_allowed_origins() -> list[str]:
