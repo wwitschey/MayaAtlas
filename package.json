@@ -5,6 +5,7 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "dev:api": "cd apps/api && uvicorn app.main:app --reload",
+    "db:migrate": "bash scripts/publish/run_migrations.sh",
     "build:web": "pnpm --filter web build",
     "lint:web": "pnpm --filter web lint"
   }

@@ -47,7 +47,13 @@ cp .env.example .env
 Use a local PostgreSQL instance with PostGIS enabled and create a database named `maya_atlas`.
 
 ### 3. Run migrations
-Apply the SQL files in `packages/db/migrations` in numeric order.
+Run:
+
+```bash
+pnpm db:migrate
+```
+
+This applies the SQL files in `packages/db/migrations` in numeric order, using `DATABASE_URL` or `PSQL_DATABASE_URL`.
 
 ### 4. Run the API
 ```bash

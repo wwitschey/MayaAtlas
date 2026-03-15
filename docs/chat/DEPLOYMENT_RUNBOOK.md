@@ -89,6 +89,14 @@ Required Render env vars:
 
 Current migration mode is manual and SQL-first. There is no automated migration runner yet, so production rollout should follow a conservative sequence.
 
+The repo now includes a lightweight wrapper:
+
+```bash
+pnpm db:migrate
+```
+
+It resolves `PSQL_DATABASE_URL` from `DATABASE_URL` when needed and runs migrations with `ON_ERROR_STOP=1`.
+
 ### One-Time Setup
 
 1. Provision the production database.
@@ -101,9 +109,7 @@ Current migration mode is manual and SQL-first. There is no automated migration 
 Run the migrations in filename order:
 
 ```bash
-for file in packages/db/migrations/*.sql; do
-  psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$file"
-done
+pnpm db:migrate
 ```
 
 Then verify:
@@ -127,7 +133,7 @@ For a normal deploy with new migrations:
 Example incremental run:
 
 ```bash
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/migrations/020_example.sql
+bash scripts/publish/run_migrations.sh 020_example.sql
 ```
 
 ### Rollback Expectations
@@ -176,7 +182,7 @@ Recommended hosted commands for the first production stack:
 
 1. Provision PostgreSQL.
 2. Enable PostGIS.
-3. Apply migrations from `packages/db/migrations` in numeric order.
+3. Apply migrations with `pnpm db:migrate`.
 4. Confirm the API can connect using `DATABASE_URL`.
 
 ## Health Checks
@@ -289,7 +295,6 @@ Use this order:
 
 This is the current remaining audit list for Phase 13:
 
-- no automated migration runner yet
 - no documented CDN or object-storage strategy for future tile assets yet
 - no explicit process manager or container definition yet
 
@@ -298,5 +303,5 @@ This is the current remaining audit list for Phase 13:
 1. Provision Vercel and Render services using the settings above.
 2. Run the migration rollout procedure in a staging-like environment.
 3. Execute the staging-like smoke test above.
-4. Decide whether to add an automated migration wrapper.
-5. Document any provider-specific issues discovered during staging.
+4. Document any provider-specific issues discovered during staging.
+5. Decide whether the wrapper should record applied migrations in a table later.
