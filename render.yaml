@@ -21,4 +21,4 @@ databases:
   - name: maya-atlas-db
     databaseName: maya_atlas
     user: maya_atlas
-    plan: starter
+    plan: free
