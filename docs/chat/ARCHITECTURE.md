@@ -21,6 +21,8 @@ OpenStreetMap raster basemap
 GeoJSON site source with MapLibre clustering
 ↓
 HTML overlays for site labels and cluster counts
+↓
+Optional hillshade and 3D terrain controls
 
 ## Database
 
@@ -78,6 +80,11 @@ HTML overlays:
 
 site labels
 cluster count text
+
+Terrain controls:
+
+Hillshade
+3D Terrain
 
 ## Source Lifecycle
 
@@ -147,8 +154,9 @@ Avoids feature-state issues.
 1. Load visible site data for the current map state
 2. Build or refresh the clustered GeoJSON source
 3. Render circles and clusters with MapLibre
-4. Render labels and cluster counts as HTML overlays
-5. Render the selected site in a separate source
+4. Optionally render hillshade and 3D terrain from raster-dem sources
+5. Render labels and cluster counts as HTML overlays
+6. Render the selected site in a separate source
 
 ## Future Architecture
 
