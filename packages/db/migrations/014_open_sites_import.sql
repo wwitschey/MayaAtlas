@@ -66,7 +66,13 @@ SET
   site_type = EXCLUDED.site_type,
   country_code = EXCLUDED.country_code,
   centroid_geom = EXCLUDED.centroid_geom,
-  updated_at = NOW();
+  updated_at = NOW()
+WHERE sites.canonical_name IS DISTINCT FROM EXCLUDED.canonical_name
+  OR sites.display_name IS DISTINCT FROM EXCLUDED.display_name
+  OR sites.short_description IS DISTINCT FROM EXCLUDED.short_description
+  OR sites.site_type IS DISTINCT FROM EXCLUDED.site_type
+  OR sites.country_code IS DISTINCT FROM EXCLUDED.country_code
+  OR sites.centroid_geom IS DISTINCT FROM EXCLUDED.centroid_geom;
 
 INSERT INTO site_source_links (site_id, source_id, link_type, note)
 SELECT DISTINCT
