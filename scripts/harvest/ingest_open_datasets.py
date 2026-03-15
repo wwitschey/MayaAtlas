@@ -23,6 +23,7 @@ WIKIDATA_RAW = RAW_DIR / "wikidata_sites.csv"
 OSM_RAW = RAW_DIR / "osm_sites.csv"
 CURATED_OUTPUT = CURATED_DIR / "sites_normalized.csv"
 REVIEW_OUTPUT = CURATED_DIR / "review_candidates.csv"
+REVIEW_RESOLUTIONS = CURATED_DIR / "review_resolutions.csv"
 CANONICAL_SITE_HINTS = (
     "zona arqueológica",
     "zona arqueologica",
@@ -108,6 +109,16 @@ class NormalizationResult:
     duplicate_coordinate_count: int
     subfeature_filtered_count: int
     review_candidate_count: int
+    review_resolution_count: int
+
+
+@dataclass(frozen=True)
+class ReviewResolution:
+    left_slug: str
+    right_slug: str
+    action: str
+    keep_slug: str
+    note: str
 
 
 def parse_args() -> argparse.Namespace:
@@ -125,6 +136,10 @@ def parse_args() -> argparse.Namespace:
         help="Stop after producing the curated normalized CSV.",
     )
     return parser.parse_args()
+
+
+def resolution_pair_key(left_slug: str, right_slug: str) -> tuple[str, str]:
+    return tuple(sorted((left_slug, right_slug)))
 
 
 def run_python_script(script_path: Path) -> None:
@@ -292,14 +307,114 @@ def normalize_rows_with_report(*datasets: list[HarvestRow]) -> NormalizationResu
         duplicate_coordinate_count=duplicate_coordinate_count,
         subfeature_filtered_count=subfeature_filtered_count,
         review_candidate_count=0,
+        review_resolution_count=0,
     )
 
 
-def find_review_candidates(rows: list[HarvestRow]) -> list[dict[str, str]]:
+def load_review_resolutions(
+    csv_path: Path,
+) -> dict[tuple[str, str], ReviewResolution]:
+    if not csv_path.exists():
+        return {}
+
+    resolutions: dict[tuple[str, str], ReviewResolution] = {}
+    with csv_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for index, raw in enumerate(reader, start=2):
+            left_slug = (raw.get("left_slug") or "").strip()
+            right_slug = (raw.get("right_slug") or "").strip()
+            action = (raw.get("action") or "").strip()
+            keep_slug = (raw.get("keep_slug") or "").strip()
+            note = (raw.get("note") or "").strip()
+
+            if not left_slug or not right_slug:
+                raise ValueError(f"{csv_path.name}:{index} must include left_slug and right_slug")
+            if left_slug == right_slug:
+                raise ValueError(f"{csv_path.name}:{index} cannot reference the same slug twice")
+            if action not in {"keep_separate", "merge", "drop_osm_subfeature"}:
+                raise ValueError(
+                    f"{csv_path.name}:{index} has unsupported action {action!r}"
+                )
+            if action == "merge" and keep_slug not in {left_slug, right_slug}:
+                raise ValueError(
+                    f"{csv_path.name}:{index} merge action requires keep_slug to match one pair slug"
+                )
+            if action != "merge" and keep_slug:
+                raise ValueError(
+                    f"{csv_path.name}:{index} only merge actions may define keep_slug"
+                )
+
+            pair_key = resolution_pair_key(left_slug, right_slug)
+            if pair_key in resolutions:
+                raise ValueError(
+                    f"{csv_path.name}:{index} duplicates an existing resolution pair"
+                )
+
+            resolutions[pair_key] = ReviewResolution(
+                left_slug=left_slug,
+                right_slug=right_slug,
+                action=action,
+                keep_slug=keep_slug,
+                note=note,
+            )
+
+    return resolutions
+
+
+def apply_review_resolutions(
+    rows: list[HarvestRow],
+    resolutions: dict[tuple[str, str], ReviewResolution],
+) -> tuple[list[HarvestRow], int]:
+    if not resolutions:
+        return rows, 0
+
+    rows_by_slug = {row.slug: row for row in rows}
+    dropped_slugs: set[str] = set()
+
+    for resolution in resolutions.values():
+        left = rows_by_slug.get(resolution.left_slug)
+        right = rows_by_slug.get(resolution.right_slug)
+        if left is None or right is None:
+            missing = resolution.left_slug if left is None else resolution.right_slug
+            raise ValueError(
+                f"review resolution references missing normalized slug {missing!r}"
+            )
+
+        if resolution.action == "keep_separate":
+            continue
+
+        if resolution.action == "merge":
+            drop_slug = (
+                resolution.right_slug
+                if resolution.keep_slug == resolution.left_slug
+                else resolution.left_slug
+            )
+            dropped_slugs.add(drop_slug)
+            continue
+
+        osm_rows = [row for row in (left, right) if row.source == "OpenStreetMap"]
+        if len(osm_rows) != 1:
+            raise ValueError(
+                "drop_osm_subfeature resolution requires exactly one OpenStreetMap row"
+            )
+        dropped_slugs.add(osm_rows[0].slug)
+
+    resolved_rows = [row for row in rows if row.slug not in dropped_slugs]
+    return resolved_rows, len(resolutions)
+
+
+def find_review_candidates(
+    rows: list[HarvestRow],
+    ignored_pairs: set[tuple[str, str]] | None = None,
+) -> list[dict[str, str]]:
     candidates: list[dict[str, str]] = []
+    ignored_pairs = ignored_pairs or set()
 
     for index, left in enumerate(rows):
         for right in rows[index + 1 :]:
+            pair_key = resolution_pair_key(left.slug, right.slug)
+            if pair_key in ignored_pairs:
+                continue
             if left.source == right.source:
                 continue
             if left.slug == right.slug:
@@ -430,6 +545,8 @@ def print_summary(
         f"- nearby OSM subfeatures filtered during normalization: "
         f"{normalization.subfeature_filtered_count}"
     )
+    print(f"- review resolutions applied: {normalization.review_resolution_count}")
+    print(f"- review resolution file: {REVIEW_RESOLUTIONS}")
     print(f"- curated rows written: {len(normalization.rows)}")
     print(f"- curated file: {CURATED_OUTPUT}")
     print(f"- review candidates written: {normalization.review_candidate_count}")
@@ -509,13 +626,21 @@ def main() -> None:
 
     raw_rows = [*osm_rows, *wikidata_rows]
     normalization = normalize_rows_with_report(osm_rows, wikidata_rows)
-    review_candidates = find_review_candidates(normalization.rows)
+    review_resolutions = load_review_resolutions(REVIEW_RESOLUTIONS)
+    resolved_rows, resolution_count = apply_review_resolutions(
+        normalization.rows, review_resolutions
+    )
+    review_candidates = find_review_candidates(
+        resolved_rows,
+        ignored_pairs=set(review_resolutions.keys()),
+    )
     normalization = NormalizationResult(
-        rows=normalization.rows,
+        rows=resolved_rows,
         duplicate_slug_count=normalization.duplicate_slug_count,
         duplicate_coordinate_count=normalization.duplicate_coordinate_count,
         subfeature_filtered_count=normalization.subfeature_filtered_count,
         review_candidate_count=len(review_candidates),
+        review_resolution_count=resolution_count,
     )
     write_curated_csv(normalization.rows, CURATED_OUTPUT)
     write_review_candidates(review_candidates, REVIEW_OUTPUT)
