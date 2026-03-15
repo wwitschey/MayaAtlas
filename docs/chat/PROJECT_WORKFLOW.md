@@ -71,6 +71,7 @@ Current stable rendering approach:
 - separate GeoJSON source for selected site
 - HTML overlays for site labels and cluster count text
 - OpenStreetMap raster basemap
+- optional hillshade and 3D terrain controls
 
 Functions used:
 removeMainSourceAndLayers()
@@ -91,6 +92,17 @@ Use HTML overlays for:
 
 - site labels
 - cluster count labels
+
+## Terrain Controls
+
+Terrain is now exposed through dedicated controls rather than the generic layer list.
+
+Current behavior:
+
+- `Hillshade` toggles the hillshade overlay
+- `3D Terrain` toggles terrain extrusion
+- terrain sources load lazily when one of those controls is enabled
+- 3D terrain only activates at higher zoom
 
 ## Selection Overlay
 

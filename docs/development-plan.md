@@ -314,13 +314,13 @@ Implemented in the stable path:
 - clustered GeoJSON site rendering
 - HTML-based site labels and cluster count overlays
 - selected-site overlay via separate source
+- optional hillshade and 3D terrain controls backed by raster-dem tiles
 - backend tile endpoint and CORS fixes for future tile-native work
 
 Deferred within this phase:
 
 - vector tile pipeline
 - PMTiles for static layers
-- raster terrain tiles
 - zoom-dependent geometry generalization
 
 ---

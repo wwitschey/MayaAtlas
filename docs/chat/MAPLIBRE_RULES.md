@@ -26,6 +26,7 @@ Current stable path:
 - clustered GeoJSON source for site points
 - separate GeoJSON source for selected site
 - HTML overlays for site labels and cluster count text
+- optional hillshade and 3D terrain controls
 
 If a MapLibre source must change structural behavior, destroy and recreate it.
 
@@ -119,6 +120,21 @@ Benefits:
 - avoids glyph endpoint failures
 - avoids symbol-layer rebuild crashes
 - keeps label tuning separate from MapLibre source behavior
+
+---
+
+# Terrain Rules
+
+Terrain should remain optional and lightweight.
+
+Current approach:
+
+- separate raster-dem source for hillshade
+- separate raster-dem source for 3D terrain
+- lazy-load terrain sources only when needed
+- keep hillshade and 3D terrain as separate controls
+
+3D terrain should not be the default visual mode at broad zoom levels.
 
 ---
 

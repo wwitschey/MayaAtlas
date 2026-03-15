@@ -19,7 +19,15 @@ import {
 
 const SOURCE_ID = "maya-sites";
 const SELECTED_SOURCE_ID = "maya-selected-site";
-const TERRAIN_SOURCE_ID = "maya-terrain";
+const TERRAIN_SOURCE_ID = "maya-terrain-3d";
+const HILLSHADE_SOURCE_ID = "maya-terrain-hillshade";
+const HILLSHADE_LAYER_ID = "maya-hillshade";
+const DEFAULT_TERRAIN_TILES_URL =
+  "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
+const DEFAULT_TERRAIN_ENCODING = "terrarium";
+const DEFAULT_TERRAIN_TILE_SIZE = 256;
+const TERRAIN_MIN_ZOOM = 8;
+const HAS_PUBLIC_TERRAIN_DEFAULT = true;
 
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
@@ -142,27 +150,81 @@ function buildUnclusteredSiteFilter(
   ] as maplibregl.FilterSpecification;
 }
 
-function addTerrainSource(map: maplibregl.Map) {
-  const terrainTilesUrl = process.env.NEXT_PUBLIC_TERRAIN_TILES_URL;
-  if (!terrainTilesUrl || map.getSource(TERRAIN_SOURCE_ID)) return;
+function ensureTerrainSources(map: maplibregl.Map) {
+  const terrainTilesUrl =
+    process.env.NEXT_PUBLIC_TERRAIN_TILES_URL || DEFAULT_TERRAIN_TILES_URL;
+  if (!terrainTilesUrl) return;
 
-  const tileSize = Number(process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || "256");
+  const tileSize = Number(
+    process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || String(DEFAULT_TERRAIN_TILE_SIZE)
+  );
   const encoding =
-    process.env.NEXT_PUBLIC_TERRAIN_ENCODING === "terrarium"
-      ? "terrarium"
-      : "mapbox";
+    process.env.NEXT_PUBLIC_TERRAIN_ENCODING || DEFAULT_TERRAIN_ENCODING;
 
-  map.addSource(TERRAIN_SOURCE_ID, {
-    type: "raster-dem",
-    tiles: [terrainTilesUrl],
-    tileSize,
-    encoding,
-  } as maplibregl.RasterDEMSourceSpecification);
+  if (!map.getSource(TERRAIN_SOURCE_ID)) {
+    map.addSource(TERRAIN_SOURCE_ID, {
+      type: "raster-dem",
+      tiles: [terrainTilesUrl],
+      tileSize,
+      encoding,
+    } as maplibregl.RasterDEMSourceSpecification);
+  }
 
-  map.setTerrain({
-    source: TERRAIN_SOURCE_ID,
-    exaggeration: 1.1,
-  });
+  if (!map.getSource(HILLSHADE_SOURCE_ID)) {
+    map.addSource(HILLSHADE_SOURCE_ID, {
+      type: "raster-dem",
+      tiles: [terrainTilesUrl],
+      tileSize,
+      encoding,
+    } as maplibregl.RasterDEMSourceSpecification);
+  }
+}
+
+function syncElevationLayers(
+  map: maplibregl.Map,
+  hillshadeEnabled: boolean,
+  terrainEnabled: boolean
+) {
+  if (hillshadeEnabled || terrainEnabled) {
+    ensureTerrainSources(map);
+  }
+
+  const hasTerrainSource = Boolean(map.getSource(TERRAIN_SOURCE_ID));
+  const hasHillshadeSource = Boolean(map.getSource(HILLSHADE_SOURCE_ID));
+  if (!hasTerrainSource || !hasHillshadeSource) return;
+
+  if (!map.getLayer(HILLSHADE_LAYER_ID)) {
+    map.addLayer({
+      id: HILLSHADE_LAYER_ID,
+      type: "hillshade",
+      source: HILLSHADE_SOURCE_ID,
+      layout: {
+        visibility: hillshadeEnabled ? "visible" : "none",
+      },
+      paint: {
+        "hillshade-shadow-color": "#5b4636",
+        "hillshade-highlight-color": "#fff7ed",
+        "hillshade-accent-color": "#8b7355",
+        "hillshade-exaggeration": 0.22,
+      },
+    }, CLUSTER_LAYER_ID);
+  } else {
+    map.setLayoutProperty(
+      HILLSHADE_LAYER_ID,
+      "visibility",
+      hillshadeEnabled ? "visible" : "none"
+    );
+  }
+
+  if (terrainEnabled && map.getZoom() >= TERRAIN_MIN_ZOOM) {
+    map.setTerrain({
+      source: TERRAIN_SOURCE_ID,
+      exaggeration: 1.05,
+    });
+    return;
+  }
+
+  map.setTerrain(null);
 }
 
 export default function MapShell() {
@@ -172,6 +234,8 @@ export default function MapShell() {
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestSerialRef = useRef(0);
   const selectedPeriodRef = useRef<string>("");
+  const hillshadeEnabledRef = useRef(false);
+  const terrainEnabledRef = useRef(false);
   const tileCacheRef = useRef<Map<string, TileCacheValue>>(new Map());
   const labelMarkersRef = useRef<LabelMarkerMap>(new Map());
   const clusterMarkersRef = useRef<ClusterMarkerMap>(new Map());
@@ -179,10 +243,20 @@ export default function MapShell() {
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [hillshadeEnabled, setHillshadeEnabled] = useState(false);
+  const [terrainEnabled, setTerrainEnabled] = useState(false);
 
   useEffect(() => {
     selectedPeriodRef.current = selectedPeriod;
   }, [selectedPeriod]);
+
+  useEffect(() => {
+    hillshadeEnabledRef.current = hillshadeEnabled;
+  }, [hillshadeEnabled]);
+
+  useEffect(() => {
+    terrainEnabledRef.current = terrainEnabled;
+  }, [terrainEnabled]);
 
   function clearPopup() {
     if (popupRef.current) {
@@ -522,9 +596,13 @@ export default function MapShell() {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", async () => {
-      addTerrainSource(map);
       const initialSites = await fetchVisibleTiles(map, selectedPeriodRef.current);
       addMainSourceAndLayers(map, null, toGeoJSON(initialSites));
+      syncElevationLayers(
+        map,
+        hillshadeEnabledRef.current,
+        terrainEnabledRef.current
+      );
       wireClusterInteractions(map);
 
       map.addSource(SELECTED_SOURCE_ID, {
@@ -594,6 +672,14 @@ export default function MapShell() {
       map.on("moveend", () => {
         scheduleViewportRefresh(map, selectedPeriodRef.current);
       });
+
+      map.on("zoomend", () => {
+        syncElevationLayers(
+          map,
+          hillshadeEnabledRef.current,
+          terrainEnabledRef.current
+        );
+      });
     });
 
     mapInstanceRef.current = map;
@@ -618,6 +704,12 @@ export default function MapShell() {
 
     void refreshMainSource(map, selectedPeriod);
   }, [selectedPeriod]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    syncElevationLayers(map, hillshadeEnabled, terrainEnabled);
+  }, [hillshadeEnabled, terrainEnabled]);
 
   async function handleSelectSite(site: SiteSummary) {
     const map = mapInstanceRef.current;
@@ -684,6 +776,42 @@ export default function MapShell() {
         <SearchBox onSelectSite={handleSelectSite} />
         <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} />
         <LayerPanel onLayerToggle={handleLayerToggle} />
+        {HAS_PUBLIC_TERRAIN_DEFAULT ? (
+          <div
+            style={{
+              background: "white",
+              padding: 12,
+              borderRadius: 12,
+              width: 220,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <div style={{ fontWeight: 700 }}>Terrain</div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                type="checkbox"
+                checked={hillshadeEnabled}
+                onChange={(event) => setHillshadeEnabled(event.target.checked)}
+              />
+              Hillshade
+            </label>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                type="checkbox"
+                checked={terrainEnabled}
+                onChange={(event) => setTerrainEnabled(event.target.checked)}
+              />
+              3D Terrain
+            </label>
+            {terrainEnabled ? (
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                3D terrain activates at zoom {TERRAIN_MIN_ZOOM}+.
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
       <SiteDrawer site={selectedSite} />
     </div>

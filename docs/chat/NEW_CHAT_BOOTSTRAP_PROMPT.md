@@ -18,6 +18,7 @@ Features already implemented:
 - stable clustered map rendering
 - OpenStreetMap raster basemap
 - HTML site labels and cluster count overlays
+- optional hillshade and 3D terrain controls
 - selected-site overlay via separate GeoJSON source
 - backend tile endpoint groundwork
 - ingestion normalization and reconciliation
@@ -47,5 +48,6 @@ When proposing changes ensure compatibility with:
 
 stable clustered map rendering
 HTML overlay labels
+terrain controls
 ingestion review workflow
 idempotent import reporting
