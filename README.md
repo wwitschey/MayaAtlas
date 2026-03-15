@@ -47,7 +47,13 @@ cp .env.example .env
 Use a local PostgreSQL instance with PostGIS enabled and create a database named `maya_atlas`.
 
 ### 3. Run migrations
-Apply the SQL files in `packages/db/migrations` in numeric order.
+Run:
+
+```bash
+pnpm db:migrate
+```
+
+This applies the SQL files in `packages/db/migrations` in numeric order, using `DATABASE_URL` or `PSQL_DATABASE_URL`.
 
 ### 4. Run the API
 ```bash
@@ -83,6 +89,26 @@ Useful related files:
 Detailed operator instructions live in:
 
 - `docs/chat/INGESTION_RUNBOOK.md`
+
+## Deployment Notes
+
+The deployment contract and current Phase 13 audit notes live in:
+
+- `docs/chat/DEPLOYMENT_RUNBOOK.md`
+
+Development and deployment environment variables are documented in:
+
+- `.env.example`
+
+Recommended first production stack:
+
+- `Vercel` for the Next.js frontend
+- `Render` web service for the FastAPI API
+- `Render Postgres` with `postgis`
+
+Provider-specific setup for that stack is documented in:
+
+- `render.yaml`
 
 ## Current Data Sources
 

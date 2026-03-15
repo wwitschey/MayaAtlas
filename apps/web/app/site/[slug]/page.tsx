@@ -1,15 +1,24 @@
 import { getSite } from "../../../lib/api";
 import type { SiteDetail } from "../../../lib/types";
 
+function normalizeSlugParam(slug: string): string {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
+
 export default async function SitePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const site: SiteDetail | null = await getSite(slug);
+  const normalizedSlug = normalizeSlugParam(slug);
+  const site: SiteDetail | null = await getSite(normalizedSlug);
 
   if (!site) {
     return (
       <main style={{ padding: 24 }}>
         <h1>Site not found</h1>
-        <p>The site "{slug}" could not be found.</p>
+        <p>The site "{normalizedSlug}" could not be found.</p>
       </main>
     );
   }

@@ -9,6 +9,7 @@ import SiteDrawer from "./SiteDrawer";
 import PeriodFilter from "./PeriodFilter";
 import type { SiteDetail, SiteSummary } from "../../lib/types";
 import { getSite, listSites } from "../../lib/api";
+import { getTerrainConfig } from "../../lib/env";
 import {
   getQueryTileZoom,
   getVisibleTiles,
@@ -22,12 +23,8 @@ const SELECTED_SOURCE_ID = "maya-selected-site";
 const TERRAIN_SOURCE_ID = "maya-terrain-3d";
 const HILLSHADE_SOURCE_ID = "maya-terrain-hillshade";
 const HILLSHADE_LAYER_ID = "maya-hillshade";
-const DEFAULT_TERRAIN_TILES_URL =
-  "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
-const DEFAULT_TERRAIN_ENCODING = "terrarium";
-const DEFAULT_TERRAIN_TILE_SIZE = 256;
 const TERRAIN_MIN_ZOOM = 8;
-const HAS_PUBLIC_TERRAIN_DEFAULT = true;
+const TERRAIN_CONFIG = getTerrainConfig();
 
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
@@ -151,15 +148,9 @@ function buildUnclusteredSiteFilter(
 }
 
 function ensureTerrainSources(map: maplibregl.Map) {
-  const terrainTilesUrl =
-    process.env.NEXT_PUBLIC_TERRAIN_TILES_URL || DEFAULT_TERRAIN_TILES_URL;
+  const terrainTilesUrl = TERRAIN_CONFIG.tilesUrl;
   if (!terrainTilesUrl) return;
-
-  const tileSize = Number(
-    process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || String(DEFAULT_TERRAIN_TILE_SIZE)
-  );
-  const encoding =
-    process.env.NEXT_PUBLIC_TERRAIN_ENCODING || DEFAULT_TERRAIN_ENCODING;
+  const { tileSize, encoding } = TERRAIN_CONFIG;
 
   if (!map.getSource(TERRAIN_SOURCE_ID)) {
     map.addSource(TERRAIN_SOURCE_ID, {
@@ -776,7 +767,7 @@ export default function MapShell() {
         <SearchBox onSelectSite={handleSelectSite} />
         <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} />
         <LayerPanel onLayerToggle={handleLayerToggle} />
-        {HAS_PUBLIC_TERRAIN_DEFAULT ? (
+        {TERRAIN_CONFIG.hasPublicDefault ? (
           <div
             style={{
               background: "white",
