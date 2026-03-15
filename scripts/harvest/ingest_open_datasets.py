@@ -167,6 +167,16 @@ def should_filter_subfeature(candidate: HarvestRow, accepted_rows: Iterable[Harv
     return False
 
 
+def is_near_existing_row(candidate: HarvestRow, accepted_rows: Iterable[HarvestRow]) -> bool:
+    for existing in accepted_rows:
+        if abs(existing.longitude - candidate.longitude) > 0.0005:
+            continue
+        if abs(existing.latitude - candidate.latitude) > 0.0005:
+            continue
+        return True
+    return False
+
+
 def normalize_rows_with_report(*datasets: list[HarvestRow]) -> NormalizationResult:
     # Prefer Wikidata rows when slugs collide; otherwise keep the first seen row.
     source_priority = {"Wikidata": 0, "OpenStreetMap": 1}
@@ -180,16 +190,17 @@ def normalize_rows_with_report(*datasets: list[HarvestRow]) -> NormalizationResu
         [row for dataset in datasets for row in dataset],
         key=lambda row: (source_priority.get(row.source, 99), row.slug, row.display_name),
     ):
+        if should_filter_subfeature(row, deduped_by_slug.values()):
+            subfeature_filtered_count += 1
+            continue
+
         coord_key = (round(row.longitude * 1_000_000), round(row.latitude * 1_000_000))
-        if coord_key in seen_exact_coords:
+        if coord_key in seen_exact_coords or is_near_existing_row(row, deduped_by_slug.values()):
             duplicate_coordinate_count += 1
             continue
 
         existing = deduped_by_slug.get(row.slug)
         if existing is None:
-            if should_filter_subfeature(row, deduped_by_slug.values()):
-                subfeature_filtered_count += 1
-                continue
             deduped_by_slug[row.slug] = row
             seen_exact_coords.add(coord_key)
             continue
