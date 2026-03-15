@@ -115,6 +115,8 @@ export default function MapShell() {
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+  const [layerVisibility, setLayerVisibility] = useState<Record<number, boolean>>({});
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   useEffect(() => {
     selectedPeriodRef.current = selectedPeriod;
@@ -134,6 +136,11 @@ export default function MapShell() {
       | maplibregl.GeoJSONSource
       | undefined;
     if (source) source.setData(emptyGeoJSON());
+    setSelectedSlug(null);
+    // Update filter on main layer
+    if (map.getLayer(CIRCLE_LAYER_ID)) {
+      map.setFilter(CIRCLE_LAYER_ID, null);
+    }
   }
 
   function setSelectedOverlay(
@@ -145,6 +152,11 @@ export default function MapShell() {
       | maplibregl.GeoJSONSource
       | undefined;
     if (source) source.setData(selectedSiteGeoJSON(site));
+    setSelectedSlug(site.slug);
+    // Update filter on main layer to exclude selected
+    if (map.getLayer(CIRCLE_LAYER_ID)) {
+      map.setFilter(CIRCLE_LAYER_ID, ["!=", ["get", "slug"], site.slug]);
+    }
   }
 
   function removeMainSourceAndLayers(map: maplibregl.Map) {
@@ -439,10 +451,10 @@ export default function MapShell() {
         type: "circle",
         source: SELECTED_SOURCE_ID,
         paint: {
-          "circle-radius": 9,
+          "circle-radius": 18,
           "circle-color": "#2563eb",
           "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 2.5,
+          "circle-stroke-width": 3,
         },
       });
 
@@ -551,6 +563,24 @@ export default function MapShell() {
     }
   }
 
+  function handleLayerToggle(layerId: number, visible: boolean) {
+    setLayerVisibility(prev => ({ ...prev, [layerId]: visible }));
+
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // For now, only handle sites layer (id 1)
+    if (layerId === 1) {
+      const layersToToggle = [CLUSTER_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CIRCLE_LAYER_ID, LABEL_LAYER_ID];
+      layersToToggle.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+        }
+      });
+    }
+    // Other layers will be added later
+  }
+
   return (
     <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
       <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
@@ -566,7 +596,7 @@ export default function MapShell() {
       >
         <SearchBox onSelectSite={handleSelectSite} />
         <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} />
-        <LayerPanel />
+        <LayerPanel onLayerToggle={handleLayerToggle} />
       </div>
       <SiteDrawer site={selectedSite} />
     </div>

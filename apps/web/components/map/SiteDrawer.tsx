@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { SiteDetail } from "../../lib/types";
 
 export default function SiteDrawer({ site }: { site: SiteDetail | null }) {
@@ -18,7 +19,12 @@ export default function SiteDrawer({ site }: { site: SiteDetail | null }) {
         overflow: "auto"
       }}
     >
-      <h2 style={{ marginTop: 0 }}>{site.display_name}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>{site.display_name}</h2>
+        <Link href={`/site/${site.slug}`} style={{ color: "#2563eb", textDecoration: "none", fontSize: 14 }}>
+          View Details →
+        </Link>
+      </div>
       <p><strong>Type:</strong> {site.site_type}</p>
       <p><strong>Country:</strong> {site.country_code ?? "Unknown"}</p>
       <p><strong>Description:</strong> {site.short_description ?? "No summary yet."}</p>
