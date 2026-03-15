@@ -22,9 +22,7 @@ const SELECTED_SOURCE_ID = "maya-selected-site";
 const TERRAIN_SOURCE_ID = "maya-terrain";
 
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
-const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
-const LABEL_LAYER_ID = "maya-sites-labels";
 const SELECTED_LAYER_ID = "maya-selected-site-circle";
 const REFRESH_DEBOUNCE_MS = 250;
 const MAP_STYLE: maplibregl.StyleSpecification = {
@@ -73,6 +71,9 @@ type TileCacheValue = {
   sites: SiteSummary[];
   fetchedAt: number;
 };
+
+type LabelMarkerMap = Map<string, maplibregl.Marker>;
+type ClusterMarkerMap = Map<string, maplibregl.Marker>;
 
 function emptyGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Point> {
   return { type: "FeatureCollection", features: [] };
@@ -172,6 +173,8 @@ export default function MapShell() {
   const requestSerialRef = useRef(0);
   const selectedPeriodRef = useRef<string>("");
   const tileCacheRef = useRef<Map<string, TileCacheValue>>(new Map());
+  const labelMarkersRef = useRef<LabelMarkerMap>(new Map());
+  const clusterMarkersRef = useRef<ClusterMarkerMap>(new Map());
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
@@ -188,6 +191,120 @@ export default function MapShell() {
     }
   }
 
+  function clearLabelMarkers() {
+    labelMarkersRef.current.forEach((marker) => marker.remove());
+    labelMarkersRef.current.clear();
+  }
+
+  function clearClusterMarkers() {
+    clusterMarkersRef.current.forEach((marker) => marker.remove());
+    clusterMarkersRef.current.clear();
+  }
+
+  function formatClusterCount(count: number): string {
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+    return String(count);
+  }
+
+  function syncClusterCountMarkers(map: maplibregl.Map) {
+    const features = map.queryRenderedFeatures({
+      layers: [CLUSTER_LAYER_ID],
+    });
+    const nextVisible = new Set<string>();
+
+    for (const feature of features) {
+      const pointCount = Number(feature.properties?.point_count ?? 0);
+      if (!pointCount) continue;
+
+      const geometry = feature.geometry;
+      if (!geometry || geometry.type !== "Point") continue;
+
+      const coordinates = geometry.coordinates as [number, number];
+      const key = `${coordinates[0].toFixed(5)}:${coordinates[1].toFixed(5)}:${pointCount}`;
+      nextVisible.add(key);
+
+      if (!clusterMarkersRef.current.has(key)) {
+        const label = document.createElement("div");
+        label.textContent = formatClusterCount(pointCount);
+        label.style.fontFamily =
+          'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        label.style.fontSize = "12px";
+        label.style.fontWeight = "700";
+        label.style.lineHeight = "1";
+        label.style.color = "#ffffff";
+        label.style.pointerEvents = "none";
+
+        const marker = new maplibregl.Marker({
+          element: label,
+          anchor: "center",
+        })
+          .setLngLat(coordinates)
+          .addTo(map);
+
+        clusterMarkersRef.current.set(key, marker);
+      }
+    }
+
+    clusterMarkersRef.current.forEach((marker, key) => {
+      if (!nextVisible.has(key)) {
+        marker.remove();
+        clusterMarkersRef.current.delete(key);
+      }
+    });
+  }
+
+  function syncLabelMarkers(map: maplibregl.Map, sites: SiteSummary[]) {
+    const shouldShow = map.getZoom() >= 6.5;
+    const nextVisible = new Set<string>();
+    const occupiedCells = new Set<string>();
+    const cellSize = map.getZoom() >= 9 ? 80 : 110;
+
+    if (shouldShow) {
+      for (const site of sites) {
+        if (site.slug === selectedSlug) continue;
+
+        const point = map.project([site.longitude, site.latitude]);
+        const cellKey = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+        if (occupiedCells.has(cellKey)) continue;
+
+        occupiedCells.add(cellKey);
+        nextVisible.add(site.slug);
+
+        if (!labelMarkersRef.current.has(site.slug)) {
+          const label = document.createElement("div");
+          label.textContent = site.display_name;
+          label.style.fontFamily =
+            'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          label.style.fontSize = "12px";
+          label.style.fontWeight = "600";
+          label.style.lineHeight = "1.1";
+          label.style.color = "#1f2937";
+          label.style.whiteSpace = "nowrap";
+          label.style.textShadow =
+            "0 0 2px rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.95)";
+          label.style.pointerEvents = "none";
+          label.style.transform = "translateY(8px)";
+
+          const marker = new maplibregl.Marker({
+            element: label,
+            anchor: "top",
+          })
+            .setLngLat([site.longitude, site.latitude])
+            .addTo(map);
+
+          labelMarkersRef.current.set(site.slug, marker);
+        }
+      }
+    }
+
+    labelMarkersRef.current.forEach((marker, slug) => {
+      if (!nextVisible.has(slug)) {
+        marker.remove();
+        labelMarkersRef.current.delete(slug);
+      }
+    });
+  }
+
   function clearSelectedOverlay() {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -198,7 +315,7 @@ export default function MapShell() {
     setSelectedSlug(null);
     const baseFilter = buildUnclusteredSiteFilter(null);
     if (map.getLayer(CIRCLE_LAYER_ID)) map.setFilter(CIRCLE_LAYER_ID, baseFilter);
-    if (map.getLayer(LABEL_LAYER_ID)) map.setFilter(LABEL_LAYER_ID, baseFilter);
+    syncClusterCountMarkers(map);
   }
 
   function setSelectedOverlay(
@@ -214,17 +331,21 @@ export default function MapShell() {
     const filter = buildUnclusteredSiteFilter(site.slug);
     if (map.getLayer(CIRCLE_LAYER_ID))
       map.setFilter(CIRCLE_LAYER_ID, filter);
-    if (map.getLayer(LABEL_LAYER_ID))
-      map.setFilter(LABEL_LAYER_ID, filter);
+    const existingMarker = labelMarkersRef.current.get(site.slug);
+    if (existingMarker) {
+      existingMarker.remove();
+      labelMarkersRef.current.delete(site.slug);
+    }
   }
 
   function addMainSourceAndLayers(
     map: maplibregl.Map,
-    selectedSlugOverride: string | null = selectedSlug
+    selectedSlugOverride: string | null = selectedSlug,
+    initialData: GeoJSON.FeatureCollection<GeoJSON.Point> = emptyGeoJSON()
   ) {
     map.addSource(SOURCE_ID, {
       type: "geojson",
-      data: emptyGeoJSON(),
+      data: initialData,
       cluster: true,
       clusterRadius: 50,
       clusterMaxZoom: 8,
@@ -256,20 +377,6 @@ export default function MapShell() {
       },
     });
 
-    map.addLayer({
-      id: CLUSTER_COUNT_LAYER_ID,
-      type: "symbol",
-      source: SOURCE_ID,
-      filter: ["has", "point_count"] as maplibregl.FilterSpecification,
-      layout: {
-        "text-field": ["get", "point_count_abbreviated"],
-        "text-size": 12,
-      },
-      paint: {
-        "text-color": "#ffffff",
-      },
-    });
-
     const circleLayer: maplibregl.CircleLayerSpecification = {
       id: CIRCLE_LAYER_ID,
       type: "circle",
@@ -295,37 +402,6 @@ export default function MapShell() {
     };
     map.addLayer(circleLayer);
 
-    const labelLayer: maplibregl.SymbolLayerSpecification = {
-      id: LABEL_LAYER_ID,
-      type: "symbol",
-      source: SOURCE_ID,
-      filter: siteFilter,
-      minzoom: 5.5,
-      layout: {
-        "text-field": ["get", "display_name"],
-        "text-font": ["Open Sans Regular"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          5.5,
-          9,
-          8,
-          10,
-          10,
-          12,
-        ],
-        "text-offset": [0, 1.1],
-        "text-allow-overlap": true,
-        "text-ignore-placement": true,
-      },
-      paint: {
-        "text-color": "#1f2937",
-        "text-halo-color": "#ffffff",
-        "text-halo-width": 1.2,
-      },
-    };
-    map.addLayer(labelLayer);
   }
 
   async function fetchVisibleTiles(
@@ -385,6 +461,10 @@ export default function MapShell() {
 
     const sites = await fetchVisibleTiles(map, period ?? "");
     source.setData(toGeoJSON(sites));
+    syncLabelMarkers(map, sites);
+    requestAnimationFrame(() => {
+      syncClusterCountMarkers(map);
+    });
   }
 
   function scheduleViewportRefresh(map: maplibregl.Map, period?: string) {
@@ -441,9 +521,10 @@ export default function MapShell() {
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
-    map.on("load", () => {
+    map.on("load", async () => {
       addTerrainSource(map);
-      addMainSourceAndLayers(map, null);
+      const initialSites = await fetchVisibleTiles(map, selectedPeriodRef.current);
+      addMainSourceAndLayers(map, null, toGeoJSON(initialSites));
       wireClusterInteractions(map);
 
       map.addSource(SELECTED_SOURCE_ID, {
@@ -510,8 +591,6 @@ export default function MapShell() {
         map.getCanvas().style.cursor = "";
       });
 
-      void refreshMainSource(map, selectedPeriodRef.current);
-
       map.on("moveend", () => {
         scheduleViewportRefresh(map, selectedPeriodRef.current);
       });
@@ -522,6 +601,8 @@ export default function MapShell() {
     return () => {
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
       clearPopup();
+      clearLabelMarkers();
+      clearClusterMarkers();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -573,12 +654,7 @@ export default function MapShell() {
 
     // For now, only handle sites layer (id 1)
     if (layerId === 1) {
-      const layersToToggle = [
-        CLUSTER_LAYER_ID,
-        CLUSTER_COUNT_LAYER_ID,
-        CIRCLE_LAYER_ID,
-        LABEL_LAYER_ID,
-      ];
+      const layersToToggle = [CLUSTER_LAYER_ID, CIRCLE_LAYER_ID];
       layersToToggle.forEach((mapLayerId) => {
         if (map.getLayer(mapLayerId)) {
           map.setLayoutProperty(
