@@ -19,14 +19,46 @@ import {
 
 const SOURCE_ID = "maya-sites";
 const SELECTED_SOURCE_ID = "maya-selected-site";
+const TERRAIN_SOURCE_ID = "maya-terrain";
 
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
-const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
-const LABEL_LAYER_ID = "maya-sites-labels";
 const SELECTED_LAYER_ID = "maya-selected-site-circle";
-
 const REFRESH_DEBOUNCE_MS = 250;
+const MAP_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  name: "Maya Atlas Base",
+  sources: {
+    "osm-raster": {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxzoom: 19,
+    },
+  },
+  layers: [
+    {
+      id: "background",
+      type: "background",
+      paint: {
+        "background-color": "#f5efe2",
+      },
+    },
+    {
+      id: "osm-raster-layer",
+      type: "raster",
+      source: "osm-raster",
+      minzoom: 0,
+      maxzoom: 19,
+      paint: {
+        "raster-opacity": 0.9,
+        "raster-saturation": -0.15,
+      },
+    },
+  ],
+};
 
 type ClusterSource = maplibregl.GeoJSONSource & {
   getClusterExpansionZoom?: (
@@ -39,6 +71,13 @@ type TileCacheValue = {
   sites: SiteSummary[];
   fetchedAt: number;
 };
+
+type LabelMarkerMap = Map<string, maplibregl.Marker>;
+type ClusterMarkerMap = Map<string, maplibregl.Marker>;
+
+function emptyGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Point> {
+  return { type: "FeatureCollection", features: [] };
+}
 
 function toGeoJSON(
   sites: SiteSummary[]
@@ -59,10 +98,6 @@ function toGeoJSON(
       },
     })),
   };
-}
-
-function emptyGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Point> {
-  return { type: "FeatureCollection", features: [] };
 }
 
 function selectedSiteGeoJSON(
@@ -86,20 +121,48 @@ function selectedSiteGeoJSON(
   };
 }
 
-function roundCoord(value: number, digits = 3): number {
-  const factor = 10 ** digits;
-  return Math.round(value * factor) / factor;
+function buildSiteFilter(
+  selectedSlug: string | null
+): maplibregl.FilterSpecification | undefined {
+  if (!selectedSlug) return undefined;
+  return ["!=", "slug", selectedSlug] as maplibregl.FilterSpecification;
 }
 
-function getRoundedViewportKey(map: maplibregl.Map, period: string): string {
-  const bounds = map.getBounds();
+function buildUnclusteredSiteFilter(
+  selectedSlug: string | null
+): maplibregl.FilterSpecification {
+  if (!selectedSlug) {
+    return ["!has", "point_count"] as maplibregl.FilterSpecification;
+  }
+
   return [
-    roundCoord(bounds.getWest(), 2),
-    roundCoord(bounds.getSouth(), 2),
-    roundCoord(bounds.getEast(), 2),
-    roundCoord(bounds.getNorth(), 2),
-    period,
-  ].join("|");
+    "all",
+    ["!has", "point_count"],
+    ["!=", "slug", selectedSlug],
+  ] as maplibregl.FilterSpecification;
+}
+
+function addTerrainSource(map: maplibregl.Map) {
+  const terrainTilesUrl = process.env.NEXT_PUBLIC_TERRAIN_TILES_URL;
+  if (!terrainTilesUrl || map.getSource(TERRAIN_SOURCE_ID)) return;
+
+  const tileSize = Number(process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || "256");
+  const encoding =
+    process.env.NEXT_PUBLIC_TERRAIN_ENCODING === "terrarium"
+      ? "terrarium"
+      : "mapbox";
+
+  map.addSource(TERRAIN_SOURCE_ID, {
+    type: "raster-dem",
+    tiles: [terrainTilesUrl],
+    tileSize,
+    encoding,
+  } as maplibregl.RasterDEMSourceSpecification);
+
+  map.setTerrain({
+    source: TERRAIN_SOURCE_ID,
+    exaggeration: 1.1,
+  });
 }
 
 export default function MapShell() {
@@ -107,15 +170,14 @@ export default function MapShell() {
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLoadedViewportKeyRef = useRef<string | null>(null);
   const requestSerialRef = useRef(0);
   const selectedPeriodRef = useRef<string>("");
-  const clusterHandlerAttachedRef = useRef(false);
   const tileCacheRef = useRef<Map<string, TileCacheValue>>(new Map());
+  const labelMarkersRef = useRef<LabelMarkerMap>(new Map());
+  const clusterMarkersRef = useRef<ClusterMarkerMap>(new Map());
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-  const [layerVisibility, setLayerVisibility] = useState<Record<number, boolean>>({});
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -129,6 +191,120 @@ export default function MapShell() {
     }
   }
 
+  function clearLabelMarkers() {
+    labelMarkersRef.current.forEach((marker) => marker.remove());
+    labelMarkersRef.current.clear();
+  }
+
+  function clearClusterMarkers() {
+    clusterMarkersRef.current.forEach((marker) => marker.remove());
+    clusterMarkersRef.current.clear();
+  }
+
+  function formatClusterCount(count: number): string {
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+    return String(count);
+  }
+
+  function syncClusterCountMarkers(map: maplibregl.Map) {
+    const features = map.queryRenderedFeatures({
+      layers: [CLUSTER_LAYER_ID],
+    });
+    const nextVisible = new Set<string>();
+
+    for (const feature of features) {
+      const pointCount = Number(feature.properties?.point_count ?? 0);
+      if (!pointCount) continue;
+
+      const geometry = feature.geometry;
+      if (!geometry || geometry.type !== "Point") continue;
+
+      const coordinates = geometry.coordinates as [number, number];
+      const key = `${coordinates[0].toFixed(5)}:${coordinates[1].toFixed(5)}:${pointCount}`;
+      nextVisible.add(key);
+
+      if (!clusterMarkersRef.current.has(key)) {
+        const label = document.createElement("div");
+        label.textContent = formatClusterCount(pointCount);
+        label.style.fontFamily =
+          'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        label.style.fontSize = "12px";
+        label.style.fontWeight = "700";
+        label.style.lineHeight = "1";
+        label.style.color = "#ffffff";
+        label.style.pointerEvents = "none";
+
+        const marker = new maplibregl.Marker({
+          element: label,
+          anchor: "center",
+        })
+          .setLngLat(coordinates)
+          .addTo(map);
+
+        clusterMarkersRef.current.set(key, marker);
+      }
+    }
+
+    clusterMarkersRef.current.forEach((marker, key) => {
+      if (!nextVisible.has(key)) {
+        marker.remove();
+        clusterMarkersRef.current.delete(key);
+      }
+    });
+  }
+
+  function syncLabelMarkers(map: maplibregl.Map, sites: SiteSummary[]) {
+    const shouldShow = map.getZoom() >= 6.5;
+    const nextVisible = new Set<string>();
+    const occupiedCells = new Set<string>();
+    const cellSize = map.getZoom() >= 9 ? 80 : 110;
+
+    if (shouldShow) {
+      for (const site of sites) {
+        if (site.slug === selectedSlug) continue;
+
+        const point = map.project([site.longitude, site.latitude]);
+        const cellKey = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+        if (occupiedCells.has(cellKey)) continue;
+
+        occupiedCells.add(cellKey);
+        nextVisible.add(site.slug);
+
+        if (!labelMarkersRef.current.has(site.slug)) {
+          const label = document.createElement("div");
+          label.textContent = site.display_name;
+          label.style.fontFamily =
+            'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          label.style.fontSize = "12px";
+          label.style.fontWeight = "600";
+          label.style.lineHeight = "1.1";
+          label.style.color = "#1f2937";
+          label.style.whiteSpace = "nowrap";
+          label.style.textShadow =
+            "0 0 2px rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.95)";
+          label.style.pointerEvents = "none";
+          label.style.transform = "translateY(8px)";
+
+          const marker = new maplibregl.Marker({
+            element: label,
+            anchor: "top",
+          })
+            .setLngLat([site.longitude, site.latitude])
+            .addTo(map);
+
+          labelMarkersRef.current.set(site.slug, marker);
+        }
+      }
+    }
+
+    labelMarkersRef.current.forEach((marker, slug) => {
+      if (!nextVisible.has(slug)) {
+        marker.remove();
+        labelMarkersRef.current.delete(slug);
+      }
+    });
+  }
+
   function clearSelectedOverlay() {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -137,10 +313,9 @@ export default function MapShell() {
       | undefined;
     if (source) source.setData(emptyGeoJSON());
     setSelectedSlug(null);
-    // Update filter on main layer
-    if (map.getLayer(CIRCLE_LAYER_ID)) {
-      map.setFilter(CIRCLE_LAYER_ID, null);
-    }
+    const baseFilter = buildUnclusteredSiteFilter(null);
+    if (map.getLayer(CIRCLE_LAYER_ID)) map.setFilter(CIRCLE_LAYER_ID, baseFilter);
+    syncClusterCountMarkers(map);
   }
 
   function setSelectedOverlay(
@@ -153,176 +328,80 @@ export default function MapShell() {
       | undefined;
     if (source) source.setData(selectedSiteGeoJSON(site));
     setSelectedSlug(site.slug);
-    // Update filter on main layer to exclude selected
-    if (map.getLayer(CIRCLE_LAYER_ID)) {
-      map.setFilter(CIRCLE_LAYER_ID, ["!=", ["get", "slug"], site.slug]);
+    const filter = buildUnclusteredSiteFilter(site.slug);
+    if (map.getLayer(CIRCLE_LAYER_ID))
+      map.setFilter(CIRCLE_LAYER_ID, filter);
+    const existingMarker = labelMarkersRef.current.get(site.slug);
+    if (existingMarker) {
+      existingMarker.remove();
+      labelMarkersRef.current.delete(site.slug);
     }
-  }
-
-  function removeMainSourceAndLayers(map: maplibregl.Map) {
-    [LABEL_LAYER_ID, CIRCLE_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CLUSTER_LAYER_ID].forEach(
-      (id) => {
-        if (map.getLayer(id)) map.removeLayer(id);
-      }
-    );
-    if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-    clusterHandlerAttachedRef.current = false;
   }
 
   function addMainSourceAndLayers(
     map: maplibregl.Map,
-    data: GeoJSON.FeatureCollection<GeoJSON.Point>,
-    clustered: boolean
+    selectedSlugOverride: string | null = selectedSlug,
+    initialData: GeoJSON.FeatureCollection<GeoJSON.Point> = emptyGeoJSON()
   ) {
     map.addSource(SOURCE_ID, {
       type: "geojson",
-      data,
-      ...(clustered
-        ? {
-            cluster: true,
-            clusterMaxZoom: 8,
-            clusterRadius: 50,
-          }
-        : {}),
+      data: initialData,
+      cluster: true,
+      clusterRadius: 50,
+      clusterMaxZoom: 8,
     });
 
-    if (clustered) {
-      map.addLayer({
-        id: CLUSTER_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": "#7c3aed",
-          "circle-radius": [
-            "step",
-            ["get", "point_count"],
-            16,
-            10,
-            20,
-            50,
-            26,
-            100,
-            32,
-          ],
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 2,
-        },
-      });
+    const siteFilter = buildUnclusteredSiteFilter(selectedSlugOverride);
 
-      map.addLayer({
-        id: CLUSTER_COUNT_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": ["get", "point_count_abbreviated"],
-          "text-size": 12,
-        },
-        paint: {
-          "text-color": "#ffffff",
-        },
-      });
-
-      map.addLayer({
-        id: CIRCLE_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#b91c1c",
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1.25,
-        },
-      });
-
-      map.addLayer({
-        id: LABEL_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        filter: ["!", ["has", "point_count"]],
-        minzoom: 7,
-        layout: {
-          "text-field": ["get", "display_name"],
-          "text-size": 12,
-          "text-offset": [0, 1.2],
-        },
-        paint: {
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.2,
-        },
-      });
-    } else {
-      map.addLayer({
-        id: CIRCLE_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#b91c1c",
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1.25,
-        },
-      });
-
-      map.addLayer({
-        id: LABEL_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        minzoom: 7,
-        layout: {
-          "text-field": ["get", "display_name"],
-          "text-size": 12,
-          "text-offset": [0, 1.2],
-        },
-        paint: {
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.2,
-        },
-      });
-    }
-  }
-
-  function wireClusterClick(map: maplibregl.Map, clustered: boolean) {
-    if (!clustered || clusterHandlerAttachedRef.current) return;
-
-    clusterHandlerAttachedRef.current = true;
-
-    map.on("click", CLUSTER_LAYER_ID, (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: [CLUSTER_LAYER_ID],
-      });
-
-      const cluster = features[0];
-      if (!cluster) return;
-
-      const clusterId = cluster.properties?.cluster_id;
-      const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
-
-      if (!source?.getClusterExpansionZoom || clusterId == null) return;
-
-      source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
-        if (err) return;
-
-        const geometry = cluster.geometry as GeoJSON.Point;
-        const coordinates = geometry.coordinates as [number, number];
-
-        map.easeTo({
-          center: coordinates,
-          zoom,
-          duration: 500,
-        });
-      });
+    map.addLayer({
+      id: CLUSTER_LAYER_ID,
+      type: "circle",
+      source: SOURCE_ID,
+      filter: ["has", "point_count"] as maplibregl.FilterSpecification,
+      paint: {
+        "circle-color": "#7c3aed",
+        "circle-radius": [
+          "step",
+          ["get", "point_count"],
+          16,
+          10,
+          20,
+          50,
+          26,
+          100,
+          32,
+        ],
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 2,
+        "circle-opacity": 0.9,
+      },
     });
 
-    map.on("mouseenter", CLUSTER_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
+    const circleLayer: maplibregl.CircleLayerSpecification = {
+      id: CIRCLE_LAYER_ID,
+      type: "circle",
+      source: SOURCE_ID,
+      filter: siteFilter,
+      paint: {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          2.5,
+          6,
+          4.5,
+          10,
+          7,
+        ],
+        "circle-color": "#b91c1c",
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 1.25,
+        "circle-opacity": 0.9,
+      },
+    };
+    map.addLayer(circleLayer);
 
-    map.on("mouseleave", CLUSTER_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "";
-    });
   }
 
   async function fetchVisibleTiles(
@@ -345,9 +424,7 @@ export default function MapShell() {
       tiles.map(async (tile: TileCoord) => {
         const cacheKey = `${tileKey(tile)}|${period}`;
         const cached = tileCacheRef.current.get(cacheKey);
-        if (cached) {
-          return cached.sites;
-        }
+        if (cached) return cached.sites;
 
         const sites = await listSites(
           tileBboxString(tile),
@@ -364,9 +441,7 @@ export default function MapShell() {
       })
     );
 
-    if (requestId !== requestSerialRef.current) {
-      return [];
-    }
+    if (requestId !== requestSerialRef.current) return [];
 
     const deduped = new Map<string, SiteSummary>();
     for (const group of tileResults) {
@@ -380,42 +455,58 @@ export default function MapShell() {
     return Array.from(deduped.values());
   }
 
-  async function rebuildMainSourceForViewport(
-    map: maplibregl.Map,
-    options?: { force?: boolean; periodOverride?: string }
-  ) {
-    const period = options?.periodOverride ?? selectedPeriodRef.current;
-    const viewportKey = getRoundedViewportKey(map, period);
-    const force = options?.force ?? false;
+  async function refreshMainSource(map: maplibregl.Map, period?: string) {
+    const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (!source) return;
 
-    if (!force && viewportKey === lastLoadedViewportKeyRef.current) return;
-
-    const clustered = !period;
-    const sites = await fetchVisibleTiles(map, period);
-    const data = toGeoJSON(sites);
-
-    clearPopup();
-    clearSelectedOverlay();
-    setSelectedSite(null);
-
-    removeMainSourceAndLayers(map);
-    addMainSourceAndLayers(map, data, clustered);
-    wireClusterClick(map, clustered);
-
-    lastLoadedViewportKeyRef.current = viewportKey;
+    const sites = await fetchVisibleTiles(map, period ?? "");
+    source.setData(toGeoJSON(sites));
+    syncLabelMarkers(map, sites);
+    requestAnimationFrame(() => {
+      syncClusterCountMarkers(map);
+    });
   }
 
-  function scheduleViewportRefresh(
-    map: maplibregl.Map,
-    options?: { force?: boolean; periodOverride?: string }
-  ) {
+  function scheduleViewportRefresh(map: maplibregl.Map, period?: string) {
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
 
     refreshTimeoutRef.current = setTimeout(() => {
-      void rebuildMainSourceForViewport(map, options);
+      void refreshMainSource(map, period);
     }, REFRESH_DEBOUNCE_MS);
+  }
+
+  function wireClusterInteractions(map: maplibregl.Map) {
+    map.on("click", CLUSTER_LAYER_ID, (e) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+
+      const clusterId = feature.properties?.cluster_id;
+      const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
+      if (!source?.getClusterExpansionZoom || clusterId == null) return;
+
+      source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
+        if (err) return;
+
+        const geometry = feature.geometry as GeoJSON.Point;
+        const coordinates = geometry.coordinates as [number, number];
+
+        map.easeTo({
+          center: coordinates,
+          zoom,
+          duration: 500,
+        });
+      });
+    });
+
+    map.on("mouseenter", CLUSTER_LAYER_ID, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", CLUSTER_LAYER_ID, () => {
+      map.getCanvas().style.cursor = "";
+    });
   }
 
   useEffect(() => {
@@ -423,9 +514,7 @@ export default function MapShell() {
 
     const map = new maplibregl.Map({
       container: mapRef.current,
-      style:
-        process.env.NEXT_PUBLIC_MAP_STYLE_URL ||
-        "https://demotiles.maplibre.org/style.json",
+      style: MAP_STYLE,
       center: [-89.5, 18.0],
       zoom: 5.5,
     });
@@ -433,13 +522,10 @@ export default function MapShell() {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", async () => {
-      const initialPeriod = selectedPeriodRef.current;
-      const initialSites = await fetchVisibleTiles(map, initialPeriod);
-      const clustered = !initialPeriod;
-      lastLoadedViewportKeyRef.current = getRoundedViewportKey(map, initialPeriod);
-
-      addMainSourceAndLayers(map, toGeoJSON(initialSites), clustered);
-      wireClusterClick(map, clustered);
+      addTerrainSource(map);
+      const initialSites = await fetchVisibleTiles(map, selectedPeriodRef.current);
+      addMainSourceAndLayers(map, null, toGeoJSON(initialSites));
+      wireClusterInteractions(map);
 
       map.addSource(SELECTED_SOURCE_ID, {
         type: "geojson",
@@ -506,7 +592,7 @@ export default function MapShell() {
       });
 
       map.on("moveend", () => {
-        scheduleViewportRefresh(map);
+        scheduleViewportRefresh(map, selectedPeriodRef.current);
       });
     });
 
@@ -515,6 +601,8 @@ export default function MapShell() {
     return () => {
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
       clearPopup();
+      clearLabelMarkers();
+      clearClusterMarkers();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -528,10 +616,7 @@ export default function MapShell() {
     clearSelectedOverlay();
     setSelectedSite(null);
 
-    scheduleViewportRefresh(map, {
-      force: true,
-      periodOverride: selectedPeriod,
-    });
+    void refreshMainSource(map, selectedPeriod);
   }, [selectedPeriod]);
 
   async function handleSelectSite(site: SiteSummary) {
@@ -564,17 +649,19 @@ export default function MapShell() {
   }
 
   function handleLayerToggle(layerId: number, visible: boolean) {
-    setLayerVisibility(prev => ({ ...prev, [layerId]: visible }));
-
     const map = mapInstanceRef.current;
     if (!map) return;
 
     // For now, only handle sites layer (id 1)
     if (layerId === 1) {
-      const layersToToggle = [CLUSTER_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CIRCLE_LAYER_ID, LABEL_LAYER_ID];
-      layersToToggle.forEach(layerId => {
-        if (map.getLayer(layerId)) {
-          map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+      const layersToToggle = [CLUSTER_LAYER_ID, CIRCLE_LAYER_ID];
+      layersToToggle.forEach((mapLayerId) => {
+        if (map.getLayer(mapLayerId)) {
+          map.setLayoutProperty(
+            mapLayerId,
+            "visibility",
+            visible ? "visible" : "none"
+          );
         }
       });
     }

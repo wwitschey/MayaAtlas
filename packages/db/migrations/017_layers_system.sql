@@ -39,7 +39,7 @@ CREATE INDEX idx_layer_styles_layer_id ON layer_styles(layer_id);
 
 -- Seed initial layers
 INSERT INTO layers (key, display_name, description, layer_type, default_visible, z_index) VALUES
-('sites', 'Maya Sites', 'Archaeological sites and settlements', 'geojson', true, 10),
+('sites', 'Maya Sites', 'Archaeological sites and settlements', 'vector_tiles', true, 10),
 ('elevation', 'Elevation', 'Terrain elevation and hillshade', 'raster', false, 1),
 ('population', 'Population Estimates', 'Historical population density', 'raster', false, 2),
 ('chronology', 'Chronology', 'Temporal periods overlay', 'geojson', false, 5),
