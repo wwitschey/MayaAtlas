@@ -4,7 +4,11 @@
 
 This runbook defines the current deployment contract for Maya Atlas as Phase 13 begins.
 
-It does not lock the project to a specific hosting provider yet. Instead, it captures the minimum environment, startup, and verification requirements needed to deploy the existing stack safely.
+The recommended first production target is:
+
+- `Vercel` for `apps/web`
+- `Render` for `apps/api`
+- `Render Postgres` with `postgis`
 
 ## Components
 
@@ -31,6 +35,7 @@ Current variables:
 - `API_HOST`
 - `API_PORT`
 - `API_CORS_ORIGINS`
+- `API_PUBLIC_ORIGIN`
 - `NEXT_PUBLIC_API_BASE_URL`
 - `NEXT_PUBLIC_TERRAIN_TILES_URL`
 - `NEXT_PUBLIC_TERRAIN_ENCODING`
@@ -40,8 +45,45 @@ Notes:
 
 - `DATABASE_URL` is required for the API
 - `API_CORS_ORIGINS` should be set explicitly in production and should not remain localhost-only
+- `API_PUBLIC_ORIGIN` should be set to the deployed API origin for operational clarity and future absolute URL needs
 - `NEXT_PUBLIC_API_BASE_URL` must point the frontend at the deployed API origin
 - terrain variables are optional because the frontend has a public DEM default
+
+## Recommended Provider Setup
+
+### Frontend: Vercel
+
+- Root directory: `apps/web`
+- Install command: `pnpm install`
+- Build command: `pnpm build`
+- Output: Next.js default
+
+Required Vercel env vars:
+
+- `NEXT_PUBLIC_API_BASE_URL`
+- optionally `NEXT_PUBLIC_TERRAIN_TILES_URL`
+- optionally `NEXT_PUBLIC_TERRAIN_ENCODING`
+- optionally `NEXT_PUBLIC_TERRAIN_TILE_SIZE`
+
+### API: Render
+
+- The repo includes [`render.yaml`](/home/wwitschey/MayaAtlas/render.yaml) for the first API/database deployment path.
+- Render web service root directory: `apps/api`
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Health check path: `/health`
+
+Required Render env vars:
+
+- `DATABASE_URL`
+- `API_CORS_ORIGINS`
+- `API_PUBLIC_ORIGIN`
+
+### Database: Render Postgres
+
+- Provision a Render Postgres instance
+- enable `postgis`
+- apply migrations from `packages/db/migrations` in numeric order before first production traffic
 
 ## Startup Commands
 
@@ -59,6 +101,11 @@ cd apps/web
 pnpm build
 pnpm start
 ```
+
+Recommended hosted commands for the first production stack:
+
+- Vercel web build: `pnpm build`
+- Render API start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
 ## Database Setup
 
@@ -92,9 +139,8 @@ Recommended manual checks after deployment:
 
 ## Current Deployment Gaps
 
-This is the starting audit list for Phase 13:
+This is the current remaining audit list for Phase 13:
 
-- no provider-specific deployment config yet
 - no automated migration runner yet
 - no production-specific env validation yet
 - no documented CDN or object-storage strategy for future tile assets yet
@@ -102,8 +148,8 @@ This is the starting audit list for Phase 13:
 
 ## Recommended Next Steps
 
-1. Choose the first deployment target for web, API, and database hosting.
-2. Add provider-specific config files.
-3. Add production env validation.
-4. Define the migration rollout procedure.
-5. Document rollback and operational checks.
+1. Provision Vercel and Render services using the settings above.
+2. Add production env validation.
+3. Define the migration rollout procedure.
+4. Document rollback and operational checks.
+5. Run the first staging-like deployment smoke test.

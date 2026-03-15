@@ -94,6 +94,16 @@ Development and deployment environment variables are documented in:
 
 - `.env.example`
 
+Recommended first production stack:
+
+- `Vercel` for the Next.js frontend
+- `Render` web service for the FastAPI API
+- `Render Postgres` with `postgis`
+
+Provider-specific setup for that stack is documented in:
+
+- `render.yaml`
+
 ## Current Data Sources
 
 The curated open-dataset pipeline currently draws from:
