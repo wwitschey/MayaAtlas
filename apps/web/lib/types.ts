@@ -4,6 +4,20 @@ export type SourceInfo = {
   url?: string | null;
 };
 
+export type ChronologyEntry = {
+  period_label?: string | null;
+  start_year?: number | null;
+  end_year?: number | null;
+  assertion_type?: string | null;
+  certainty?: string | null;
+};
+
+export type PopulationEstimate = {
+  estimate_year?: number | null;
+  population?: number | null;
+  certainty?: string | null;
+};
+
 export type SiteSummary = {
   id: number;
   slug: string;
@@ -18,6 +32,11 @@ export type SiteSummary = {
 
 export type SiteDetail = SiteSummary & {
   sources: SourceInfo[];
+  aliases: string[];
+  chronology: ChronologyEntry[];
+  population_estimates: PopulationEstimate[];
+  culture_area?: string | null;
+  admin_region?: string | null;
 };
 
 export type LayerDefinition = {

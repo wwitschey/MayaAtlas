@@ -727,6 +727,11 @@ export default function MapShell() {
       setSelectedSite({
         ...site,
         sources: [],
+        aliases: [],
+        chronology: [],
+        population_estimates: [],
+        culture_area: null,
+        admin_region: null,
       });
     }
   }
