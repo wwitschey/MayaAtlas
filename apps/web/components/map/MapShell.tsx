@@ -6,14 +6,19 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import SearchBox from "./SearchBox";
 import LayerPanel from "./LayerPanel";
 import SiteDrawer from "./SiteDrawer";
+import PeriodFilter from "./PeriodFilter";
 import type { SiteDetail, SiteSummary } from "../../lib/types";
 import { getSite, listSites } from "../../lib/api";
 
 const SOURCE_ID = "maya-sites";
+const SELECTED_SOURCE_ID = "maya-selected-site";
+
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
 const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
 const LABEL_LAYER_ID = "maya-sites-labels";
+const SELECTED_LAYER_ID = "maya-selected-site-circle";
+const clusterHandlerAttachedRef = useRef(false);
 
 const REFRESH_DEBOUNCE_MS = 250;
 
@@ -31,7 +36,6 @@ function toGeoJSON(
     type: "FeatureCollection",
     features: sites.map((site) => ({
       type: "Feature",
-      id: site.slug,
       geometry: {
         type: "Point",
         coordinates: [site.longitude, site.latitude],
@@ -43,6 +47,31 @@ function toGeoJSON(
         country_code: site.country_code ?? "",
       },
     })),
+  };
+}
+
+function emptyGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Point> {
+  return { type: "FeatureCollection", features: [] };
+}
+
+function selectedSiteGeoJSON(
+  site: Pick<SiteSummary, "slug" | "display_name" | "longitude" | "latitude">
+): GeoJSON.FeatureCollection<GeoJSON.Point> {
+  return {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [site.longitude, site.latitude],
+        },
+        properties: {
+          slug: site.slug,
+          display_name: site.display_name,
+        },
+      },
+    ],
   };
 }
 
@@ -64,14 +93,18 @@ function getRoundedBbox(map: maplibregl.Map): string {
 export default function MapShell() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
-  const selectedFeatureIdRef = useRef<string | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLoadedBboxRef = useRef<string | null>(null);
+  const lastLoadedKeyRef = useRef<string | null>(null);
   const requestSerialRef = useRef(0);
-  const isRefreshingRef = useRef(false);
+  const selectedPeriodRef = useRef<string>("");
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
+
+  useEffect(() => {
+    selectedPeriodRef.current = selectedPeriod;
+  }, [selectedPeriod]);
 
   function clearPopup() {
     if (popupRef.current) {
@@ -80,103 +113,47 @@ export default function MapShell() {
     }
   }
 
-  function setSelectedFeature(slug: string | null) {
+  function clearSelectedOverlay() {
     const map = mapInstanceRef.current;
     if (!map) return;
-
-    const source = map.getSource(SOURCE_ID);
-    if (!source) return;
-
-    const previous = selectedFeatureIdRef.current;
-
-    if (previous) {
-      map.setFeatureState(
-        { source: SOURCE_ID, id: previous },
-        { selected: false }
-      );
-    }
-
-    if (slug) {
-      map.setFeatureState({ source: SOURCE_ID, id: slug }, { selected: true });
-    }
-
-    selectedFeatureIdRef.current = slug;
+    const source = map.getSource(SELECTED_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (source) source.setData(emptyGeoJSON());
   }
 
-  async function refreshSitesForViewport(
-    map: maplibregl.Map,
-    options?: { force?: boolean }
+  function setSelectedOverlay(
+    site: Pick<SiteSummary, "slug" | "display_name" | "longitude" | "latitude">
   ) {
-    const bbox = getRoundedBbox(map);
-    const force = options?.force ?? false;
-
-    if (!force && bbox === lastLoadedBboxRef.current) {
-      return;
-    }
-
-    const requestId = ++requestSerialRef.current;
-    isRefreshingRef.current = true;
-
-    try {
-      const sites = await listSites(bbox);
-
-      // Ignore stale responses that return after a newer request started
-      if (requestId !== requestSerialRef.current) {
-        return;
-      }
-
-      const data = toGeoJSON(sites);
-      const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-
-      if (source) {
-        source.setData(data);
-        lastLoadedBboxRef.current = bbox;
-      }
-    } finally {
-      if (requestId === requestSerialRef.current) {
-        isRefreshingRef.current = false;
-      }
-    }
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const source = map.getSource(SELECTED_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (source) source.setData(selectedSiteGeoJSON(site));
   }
 
-  function scheduleViewportRefresh(map: maplibregl.Map, options?: { force?: boolean }) {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-
-    refreshTimeoutRef.current = setTimeout(() => {
-      void refreshSitesForViewport(map, options);
-    }, REFRESH_DEBOUNCE_MS);
+  function removeMainSourceAndLayers(map: maplibregl.Map) {
+    [LABEL_LAYER_ID, CIRCLE_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CLUSTER_LAYER_ID].forEach((id) => {
+      if (map.getLayer(id)) map.removeLayer(id);
+    });
+    if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
   }
 
-  useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
-
-    const map = new maplibregl.Map({
-      container: mapRef.current,
-      style:
-        process.env.NEXT_PUBLIC_MAP_STYLE_URL ||
-        "https://demotiles.maplibre.org/style.json",
-      center: [-89.5, 18.0],
-      zoom: 5.5,
+  function addMainSourceAndLayers(
+    map: maplibregl.Map,
+    data: GeoJSON.FeatureCollection<GeoJSON.Point>,
+    clustered: boolean
+  ) {
+    map.addSource(SOURCE_ID, {
+      type: "geojson",
+      data,
+      ...(clustered
+        ? {
+            cluster: true,
+            clusterMaxZoom: 8,
+            clusterRadius: 50,
+          }
+        : {}),
     });
 
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
-
-    map.on("load", async () => {
-      const initialSites = await listSites(getRoundedBbox(map));
-      const data = toGeoJSON(initialSites);
-      lastLoadedBboxRef.current = getRoundedBbox(map);
-
-      map.addSource(SOURCE_ID, {
-        type: "geojson",
-        data,
-        promoteId: "slug",
-        cluster: true,
-        clusterMaxZoom: 8,
-        clusterRadius: 50,
-      });
-
+    if (clustered) {
       map.addLayer({
         id: CLUSTER_LAYER_ID,
         type: "circle",
@@ -220,25 +197,10 @@ export default function MapShell() {
         source: SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-radius": [
-            "case",
-            ["boolean", ["feature-state", "selected"], false],
-            9,
-            6,
-          ],
-          "circle-color": [
-            "case",
-            ["boolean", ["feature-state", "selected"], false],
-            "#2563eb",
-            "#b91c1c",
-          ],
+          "circle-radius": 6,
+          "circle-color": "#b91c1c",
           "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": [
-            "case",
-            ["boolean", ["feature-state", "selected"], false],
-            2.5,
-            1.25,
-          ],
+          "circle-stroke-width": 1.25,
         },
       });
 
@@ -258,41 +220,182 @@ export default function MapShell() {
           "text-halo-width": 1.2,
         },
       });
+    } else {
+      map.addLayer({
+        id: CIRCLE_LAYER_ID,
+        type: "circle",
+        source: SOURCE_ID,
+        paint: {
+          "circle-radius": 6,
+          "circle-color": "#b91c1c",
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 1.25,
+        },
+      });
+
+      map.addLayer({
+        id: LABEL_LAYER_ID,
+        type: "symbol",
+        source: SOURCE_ID,
+        minzoom: 7,
+        layout: {
+          "text-field": ["get", "display_name"],
+          "text-size": 12,
+          "text-offset": [0, 1.2],
+        },
+        paint: {
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.2,
+        },
+      });
+    }
+  }
+
+    function wireClusterClick(map: maplibregl.Map, clustered: boolean) {
+      if (!clustered || clusterHandlerAttachedRef.current) return;
+
+      clusterHandlerAttachedRef.current = true;
 
       map.on("click", CLUSTER_LAYER_ID, (e) => {
-        const features = map.queryRenderedFeatures(e.point, {
-          layers: [CLUSTER_LAYER_ID],
-        });
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: [CLUSTER_LAYER_ID],
+      });
 
-        const cluster = features[0];
-        if (!cluster) return;
+      const cluster = features[0];
+      if (!cluster) return;
 
-        const clusterId = cluster.properties?.cluster_id;
-        const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
+      const clusterId = cluster.properties?.cluster_id;
+      const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
 
-        if (!source?.getClusterExpansionZoom || clusterId == null) return;
+      if (!source?.getClusterExpansionZoom || clusterId == null) return;
 
-        source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
-          if (err) return;
+      source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
+        if (err) return;
 
-          const geometry = cluster.geometry as GeoJSON.Point;
-          const coordinates = geometry.coordinates as [number, number];
+        const geometry = cluster.geometry as GeoJSON.Point;
+        const coordinates = geometry.coordinates as [number, number];
 
-          map.easeTo({
-            center: coordinates,
-            zoom,
-            duration: 500,
-          });
+        map.easeTo({
+          center: coordinates,
+          zoom,
+          duration: 500,
         });
       });
+    });
+
+    map.on("mouseenter", CLUSTER_LAYER_ID, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", CLUSTER_LAYER_ID, () => {
+      map.getCanvas().style.cursor = "";
+    });
+  }
+
+  async function rebuildMainSourceForViewport(
+    map: maplibregl.Map,
+    options?: { force?: boolean; periodOverride?: string }
+  ) {
+    const bbox = getRoundedBbox(map);
+    const period = options?.periodOverride ?? selectedPeriodRef.current;
+    const key = `${bbox}|${period}`;
+    const force = options?.force ?? false;
+
+    if (!force && key === lastLoadedKeyRef.current) return;
+
+    const requestId = ++requestSerialRef.current;
+    const sites = await listSites(bbox, period || undefined);
+
+    if (requestId !== requestSerialRef.current) return;
+
+    const clustered = !period;
+    const data = toGeoJSON(sites);
+
+    clearPopup();
+    clearSelectedOverlay();
+    setSelectedSite(null);
+
+    removeMainSourceAndLayers(map);
+    addMainSourceAndLayers(map, data, clustered);
+    lastLoadedKeyRef.current = key;
+  }
+
+  function scheduleViewportRefresh(
+    map: maplibregl.Map,
+    options?: { force?: boolean; periodOverride?: string }
+  ) {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
+    refreshTimeoutRef.current = setTimeout(() => {
+      void rebuildMainSourceForViewport(map, options);
+    }, REFRESH_DEBOUNCE_MS);
+  }
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: mapRef.current,
+      style:
+        process.env.NEXT_PUBLIC_MAP_STYLE_URL ||
+        "https://demotiles.maplibre.org/style.json",
+      center: [-89.5, 18.0],
+      zoom: 5.5,
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    map.on("load", async () => {
+      const initialBbox = getRoundedBbox(map);
+      const initialPeriod = selectedPeriodRef.current;
+      const initialSites = await listSites(initialBbox, initialPeriod || undefined);
+      const clustered = !initialPeriod;
+
+      lastLoadedKeyRef.current = `${initialBbox}|${initialPeriod}`;
+
+      addMainSourceAndLayers(map, toGeoJSON(initialSites), clustered);
+
+      map.addSource(SELECTED_SOURCE_ID, {
+        type: "geojson",
+        data: emptyGeoJSON(),
+      });
+
+      map.addLayer({
+        id: SELECTED_LAYER_ID,
+        type: "circle",
+        source: SELECTED_SOURCE_ID,
+        paint: {
+          "circle-radius": 9,
+          "circle-color": "#2563eb",
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2.5,
+        },
+      });
+
+      wireClusterClick(map, clustered);
 
       map.on("click", CIRCLE_LAYER_ID, async (e) => {
         const feature = e.features?.[0];
         const slug = feature?.properties?.slug;
+        const displayName = feature?.properties?.display_name;
         if (!slug) return;
 
         const geometry = feature.geometry as GeoJSON.Point;
         const coordinates = geometry.coordinates as [number, number];
+
+        const selectedSummary: SiteSummary = {
+          id: 0,
+          slug,
+          display_name: displayName ?? slug,
+          canonical_name: displayName ?? slug,
+          site_type: feature?.properties?.site_type ?? "settlement",
+          country_code: feature?.properties?.country_code ?? "",
+          short_description: null,
+          longitude: coordinates[0],
+          latitude: coordinates[1],
+        };
 
         map.flyTo({
           center: coordinates,
@@ -300,26 +403,16 @@ export default function MapShell() {
           essential: true,
         });
 
-        setSelectedFeature(slug);
         clearPopup();
+        setSelectedOverlay(selectedSummary);
 
         popupRef.current = new maplibregl.Popup({ offset: 12 })
           .setLngLat(coordinates)
-          .setHTML(`<strong>${feature.properties?.display_name ?? slug}</strong>`)
+          .setHTML(`<strong>${displayName ?? slug}</strong>`)
           .addTo(map);
 
         const site = await getSite(slug);
-        if (site) {
-          setSelectedSite(site);
-        }
-      });
-
-      map.on("mouseenter", CLUSTER_LAYER_ID, () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-
-      map.on("mouseleave", CLUSTER_LAYER_ID, () => {
-        map.getCanvas().style.cursor = "";
+        if (site) setSelectedSite(site);
       });
 
       map.on("mouseenter", CIRCLE_LAYER_ID, () => {
@@ -338,21 +431,32 @@ export default function MapShell() {
     mapInstanceRef.current = map;
 
     return () => {
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-      }
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
       clearPopup();
       map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
 
-  async function handleSelectSite(site: SiteSummary) {
-    setSelectedFeature(site.slug);
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !map.isStyleLoaded()) return;
 
+    clearPopup();
+    clearSelectedOverlay();
+    setSelectedSite(null);
+
+    scheduleViewportRefresh(map, {
+      force: true,
+      periodOverride: selectedPeriod,
+    });
+  }, [selectedPeriod]);
+
+  async function handleSelectSite(site: SiteSummary) {
     const map = mapInstanceRef.current;
     if (map) {
       clearPopup();
+      setSelectedOverlay(site);
 
       popupRef.current = new maplibregl.Popup({ offset: 12 })
         .setLngLat([site.longitude, site.latitude])
@@ -364,9 +468,6 @@ export default function MapShell() {
         zoom: 9,
         essential: true,
       });
-
-      // Optional force refresh after search fly-to lands in a new viewport
-      scheduleViewportRefresh(map, { force: true });
     }
 
     const detailedSite = await getSite(site.slug);
@@ -394,6 +495,7 @@ export default function MapShell() {
         }}
       >
         <SearchBox onSelectSite={handleSelectSite} />
+        <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} />
         <LayerPanel />
       </div>
       <SiteDrawer site={selectedSite} />

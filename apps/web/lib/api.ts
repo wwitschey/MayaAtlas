@@ -8,10 +8,18 @@ export async function searchSites(q: string): Promise<SiteSummary[]> {
   return response.json();
 }
 
-export async function listSites(bbox?: string): Promise<SiteSummary[]> {
-  const url = bbox
-    ? `${API_BASE}/api/sites?bbox=${encodeURIComponent(bbox)}`
-    : `${API_BASE}/api/sites`;
+export async function listSites(bbox?: string, period?: string): Promise<SiteSummary[]> {
+  const params = new URLSearchParams();
+
+  if (bbox) {
+    params.set("bbox", bbox);
+  }
+
+  if (period) {
+    params.set("period", period);
+  }
+
+  const url = `${API_BASE}/api/sites${params.toString() ? `?${params.toString()}` : ""}`;
 
   const response = await fetch(url);
   if (!response.ok) return [];
