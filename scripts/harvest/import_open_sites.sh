@@ -10,7 +10,11 @@ if [ -f "$REPO_ROOT/.env" ]; then
   set +a
 fi
 
-: "${PSQL_DATABASE_URL:?PSQL_DATABASE_URL is not set. Define it in .env or export it in your shell.}"
+if [ -z "${PSQL_DATABASE_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
+  PSQL_DATABASE_URL="${DATABASE_URL/postgresql+psycopg:/postgresql:}"
+fi
+
+: "${PSQL_DATABASE_URL:?PSQL_DATABASE_URL or DATABASE_URL is not set. Define one in .env or export it in your shell.}"
 
 NORMALIZED_FILE="${1:-$REPO_ROOT/data/curated/open-datasets/sites_normalized.csv}"
 
@@ -22,4 +26,7 @@ psql "$PSQL_DATABASE_URL" -c "TRUNCATE TABLE open_sites_stage;"
 
 psql "$PSQL_DATABASE_URL" -c "\copy open_sites_stage(slug,canonical_name,display_name,longitude,latitude,site_type,country_code,short_description,source) FROM '$NORMALIZED_FILE' WITH (FORMAT csv, HEADER true, ENCODING 'UTF8')"
 
+psql "$PSQL_DATABASE_URL" -f "$REPO_ROOT/packages/db/migrations/019_open_sites_import_report.sql"
 psql "$PSQL_DATABASE_URL" -f "$REPO_ROOT/packages/db/migrations/014_open_sites_import.sql"
+psql "$PSQL_DATABASE_URL" -At -F $'\t' -c "SELECT metric, value FROM open_sites_import_report ORDER BY metric;"
+psql "$PSQL_DATABASE_URL" -c "DROP TABLE IF EXISTS open_sites_import_report;"

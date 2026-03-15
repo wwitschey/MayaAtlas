@@ -1,0 +1,4 @@
+canonical_name,display_name,slug,longitude,latitude,site_type,country_code,short_description,source
+Central Plaza,Central Plaza,central-plaza,-89.1000000,17.2000000,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Central Plaza Marker,Central Plaza Marker,central-plaza-marker,-89.1000002,17.2000001,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap
+Temple 5C-49,Temple 5C-49,temple-5c-49,-89.6279747,17.2206852,archaeological_site,,Archaeological site recorded in OpenStreetMap.,OpenStreetMap

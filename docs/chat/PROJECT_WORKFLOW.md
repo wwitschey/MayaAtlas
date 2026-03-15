@@ -12,6 +12,7 @@ feature/<feature-name>
 Example branches used:
 feature/witschey-brown-ingest
 feature/spatial-tile-caching
+feature/phase-12-ingestion
 
 Typical flow:
 git checkout main
@@ -27,13 +28,11 @@ Then merge into main.
 
 ## Development Phases
 
-Phase 1–4  Infrastructure setup (repo, DB, API, Next.js)
-Phase 5    MapLibre map + site markers
-Phase 6    Witschey/Brown dataset ingestion
-Phase 7    Viewport-driven loading
-Phase 8    Temporal filtering
-Phase 8.5  Spatial tile caching
-Phase 9    Historical layers (future)
+Phase 1–4   Infrastructure setup
+Phase 5–10  Core map, search, and data model work
+Phase 11    Stable clustered map rendering, overlay labels, tile groundwork
+Phase 12    Data ingestion workflow and review loop
+Phase 13    Deployment
 
 ## Backend Workflow
 
@@ -66,22 +65,32 @@ pnpm dev:web
 
 ## MapLibre Development Rules
 
-Source lifecycle when refreshing data:
+Current stable rendering approach:
 
-1. Remove layers
-2. Remove source
-3. Recreate source
-4. Re-add layers
+- clustered GeoJSON source for site points
+- separate GeoJSON source for selected site
+- HTML overlays for site labels and cluster count text
+- OpenStreetMap raster basemap
 
 Functions used:
 removeMainSourceAndLayers()
 addMainSourceAndLayers()
 
-## Cluster Behavior
+Use the source rebuild pattern only when structural source behavior changes.
 
-Clusters enabled only when no time filter:
+## Label Behavior
 
-clustered = !period
+MapLibre text layers are intentionally avoided in the stable path.
+
+Reason:
+
+- glyph loading instability
+- symbol-layer crashes during dynamic map updates
+
+Use HTML overlays for:
+
+- site labels
+- cluster count labels
 
 ## Selection Overlay
 
@@ -90,21 +99,28 @@ maya-selected-site
 
 This avoids feature-state instability.
 
-## Viewport Refresh Strategy
+## Ingestion Workflow
 
-Refresh occurs on:
+Primary scripts:
 
-map.on("moveend")
+- `scripts/harvest/ingest_open_datasets.py`
+- `scripts/harvest/import_open_sites.sh`
+- `scripts/harvest/verify_ingestion_fixture.py`
+- `docs/chat/INGESTION_RUNBOOK.md`
 
-But is:
-- debounced
-- deduplicated by viewport key
+Curated review files:
 
-## Tile Cache Strategy
+- `data/curated/open-datasets/review_candidates.csv`
+- `data/curated/open-datasets/review_resolutions.csv`
 
-Client-side spatial tile caching.
+Current ingestion expectations:
 
-Cache key:
-z/x/y | period
+1. Run normalization and generate curated CSV output.
+2. Review ambiguous candidate pairs.
+3. Record durable decisions in `review_resolutions.csv`.
+4. Re-run ingestion so those decisions are applied deterministically.
+5. Use import-report metrics to confirm idempotent behavior.
 
-Tile results merged client-side.
+Operator reference:
+
+- `docs/chat/INGESTION_RUNBOOK.md`
