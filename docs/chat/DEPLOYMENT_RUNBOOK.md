@@ -202,6 +202,89 @@ Recommended manual checks after deployment:
 5. Confirm `/health` returns `{"ok": true}`.
 6. Confirm the site drawer opens from a map click.
 
+## Staging-Like Smoke Test
+
+Before the first public production release, run one staging-like deployment cycle using the same provider assumptions and production-style environment values.
+
+### Goal
+
+Prove that:
+
+- the API boots with production env validation enabled
+- the web app points at the deployed API correctly
+- migrations can be applied safely before app traffic
+- the core map and site-detail flow work end to end
+
+### Recommended Staging Inputs
+
+Use staging-style values, not localhost values:
+
+- `DATABASE_URL` pointing at a non-local Postgres/PostGIS instance
+- `API_CORS_ORIGINS` set to the staging frontend origin
+- `API_PUBLIC_ORIGIN` set to the staging API origin
+- `NEXT_PUBLIC_API_BASE_URL` set to the staging API origin
+
+Example shape:
+
+```text
+API_CORS_ORIGINS=https://staging.maya-atlas-web.example
+API_PUBLIC_ORIGIN=https://staging.maya-atlas-api.example
+NEXT_PUBLIC_API_BASE_URL=https://staging.maya-atlas-api.example
+```
+
+### Run Order
+
+1. Provision the staging database.
+2. Enable `postgis`.
+3. Apply migrations in numeric order.
+4. Deploy the API with staging env vars.
+5. Confirm `/health` is green.
+6. Deploy the web app with `NEXT_PUBLIC_API_BASE_URL` pointed at staging API.
+7. Run the smoke checks below.
+
+### Smoke Checks
+
+API checks:
+
+1. `GET /health` returns `200` with `{"ok": true}`
+2. `GET /api/layers` returns JSON
+3. `GET /api/sites?limit=5` returns rows
+4. `GET /api/search/sites?q=tikal` returns JSON without server error
+
+Frontend checks:
+
+1. Frontend root page loads without a fatal runtime error
+2. Base map renders
+3. Site points render
+4. Period filter changes visible results
+5. Search can select a site
+6. Clicking a site opens the drawer
+7. Optional terrain controls render and toggle without crashing the map
+
+Cross-origin checks:
+
+1. Browser network requests to the API succeed from the staging frontend origin
+2. No CORS errors in console for `/api/sites`, `/api/layers`, or `/api/search/sites`
+
+### Pass Criteria
+
+Treat the staging smoke test as passing only if:
+
+- migrations complete without manual DB repair
+- API health and core JSON endpoints work
+- frontend map and site-detail interactions work
+- no blocking console errors appear during normal use
+- CORS is correct for the staging frontend origin
+
+### If It Fails
+
+Use this order:
+
+1. Fix environment/config issues first
+2. Then fix migration-order or DB-state issues
+3. Then fix app/runtime regressions
+4. Rerun the full smoke sequence, not just the failed single step
+
 ## Current Deployment Gaps
 
 This is the current remaining audit list for Phase 13:
@@ -214,6 +297,6 @@ This is the current remaining audit list for Phase 13:
 
 1. Provision Vercel and Render services using the settings above.
 2. Run the migration rollout procedure in a staging-like environment.
-3. Document rollback and operational checks.
+3. Execute the staging-like smoke test above.
 4. Decide whether to add an automated migration wrapper.
-5. Run the first staging-like deployment smoke test.
+5. Document any provider-specific issues discovered during staging.
