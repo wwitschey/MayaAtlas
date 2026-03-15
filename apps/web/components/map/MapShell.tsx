@@ -18,7 +18,6 @@ const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
 const LABEL_LAYER_ID = "maya-sites-labels";
 const SELECTED_LAYER_ID = "maya-selected-site-circle";
-const clusterHandlerAttachedRef = useRef(false);
 
 const REFRESH_DEBOUNCE_MS = 250;
 
@@ -98,6 +97,7 @@ export default function MapShell() {
   const lastLoadedKeyRef = useRef<string | null>(null);
   const requestSerialRef = useRef(0);
   const selectedPeriodRef = useRef<string>("");
+  const clusterHandlerAttachedRef = useRef(false);
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
@@ -116,7 +116,9 @@ export default function MapShell() {
   function clearSelectedOverlay() {
     const map = mapInstanceRef.current;
     if (!map) return;
-    const source = map.getSource(SELECTED_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    const source = map.getSource(SELECTED_SOURCE_ID) as
+      | maplibregl.GeoJSONSource
+      | undefined;
     if (source) source.setData(emptyGeoJSON());
   }
 
@@ -125,15 +127,20 @@ export default function MapShell() {
   ) {
     const map = mapInstanceRef.current;
     if (!map) return;
-    const source = map.getSource(SELECTED_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    const source = map.getSource(SELECTED_SOURCE_ID) as
+      | maplibregl.GeoJSONSource
+      | undefined;
     if (source) source.setData(selectedSiteGeoJSON(site));
   }
 
   function removeMainSourceAndLayers(map: maplibregl.Map) {
-    [LABEL_LAYER_ID, CIRCLE_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CLUSTER_LAYER_ID].forEach((id) => {
-      if (map.getLayer(id)) map.removeLayer(id);
-    });
+    [LABEL_LAYER_ID, CIRCLE_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CLUSTER_LAYER_ID].forEach(
+      (id) => {
+        if (map.getLayer(id)) map.removeLayer(id);
+      }
+    );
     if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+    clusterHandlerAttachedRef.current = false;
   }
 
   function addMainSourceAndLayers(
@@ -251,12 +258,12 @@ export default function MapShell() {
     }
   }
 
-    function wireClusterClick(map: maplibregl.Map, clustered: boolean) {
-      if (!clustered || clusterHandlerAttachedRef.current) return;
+  function wireClusterClick(map: maplibregl.Map, clustered: boolean) {
+    if (!clustered || clusterHandlerAttachedRef.current) return;
 
-      clusterHandlerAttachedRef.current = true;
+    clusterHandlerAttachedRef.current = true;
 
-      map.on("click", CLUSTER_LAYER_ID, (e) => {
+    map.on("click", CLUSTER_LAYER_ID, (e) => {
       const features = map.queryRenderedFeatures(e.point, {
         layers: [CLUSTER_LAYER_ID],
       });
@@ -317,6 +324,7 @@ export default function MapShell() {
 
     removeMainSourceAndLayers(map);
     addMainSourceAndLayers(map, data, clustered);
+    wireClusterClick(map, clustered);
     lastLoadedKeyRef.current = key;
   }
 
@@ -350,12 +358,16 @@ export default function MapShell() {
     map.on("load", async () => {
       const initialBbox = getRoundedBbox(map);
       const initialPeriod = selectedPeriodRef.current;
-      const initialSites = await listSites(initialBbox, initialPeriod || undefined);
+      const initialSites = await listSites(
+        initialBbox,
+        initialPeriod || undefined
+      );
       const clustered = !initialPeriod;
 
       lastLoadedKeyRef.current = `${initialBbox}|${initialPeriod}`;
 
       addMainSourceAndLayers(map, toGeoJSON(initialSites), clustered);
+      wireClusterClick(map, clustered);
 
       map.addSource(SELECTED_SOURCE_ID, {
         type: "geojson",
@@ -373,8 +385,6 @@ export default function MapShell() {
           "circle-stroke-width": 2.5,
         },
       });
-
-      wireClusterClick(map, clustered);
 
       map.on("click", CIRCLE_LAYER_ID, async (e) => {
         const feature = e.features?.[0];
