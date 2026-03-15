@@ -19,14 +19,48 @@ import {
 
 const SOURCE_ID = "maya-sites";
 const SELECTED_SOURCE_ID = "maya-selected-site";
+const TERRAIN_SOURCE_ID = "maya-terrain";
 
 const CLUSTER_LAYER_ID = "maya-sites-clusters";
 const CLUSTER_COUNT_LAYER_ID = "maya-sites-cluster-count";
 const CIRCLE_LAYER_ID = "maya-sites-circles";
 const LABEL_LAYER_ID = "maya-sites-labels";
 const SELECTED_LAYER_ID = "maya-selected-site-circle";
-
 const REFRESH_DEBOUNCE_MS = 250;
+const MAP_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  name: "Maya Atlas Base",
+  sources: {
+    "osm-raster": {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxzoom: 19,
+    },
+  },
+  layers: [
+    {
+      id: "background",
+      type: "background",
+      paint: {
+        "background-color": "#f5efe2",
+      },
+    },
+    {
+      id: "osm-raster-layer",
+      type: "raster",
+      source: "osm-raster",
+      minzoom: 0,
+      maxzoom: 19,
+      paint: {
+        "raster-opacity": 0.9,
+        "raster-saturation": -0.15,
+      },
+    },
+  ],
+};
 
 type ClusterSource = maplibregl.GeoJSONSource & {
   getClusterExpansionZoom?: (
@@ -39,6 +73,10 @@ type TileCacheValue = {
   sites: SiteSummary[];
   fetchedAt: number;
 };
+
+function emptyGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Point> {
+  return { type: "FeatureCollection", features: [] };
+}
 
 function toGeoJSON(
   sites: SiteSummary[]
@@ -59,10 +97,6 @@ function toGeoJSON(
       },
     })),
   };
-}
-
-function emptyGeoJSON(): GeoJSON.FeatureCollection<GeoJSON.Point> {
-  return { type: "FeatureCollection", features: [] };
 }
 
 function selectedSiteGeoJSON(
@@ -86,20 +120,48 @@ function selectedSiteGeoJSON(
   };
 }
 
-function roundCoord(value: number, digits = 3): number {
-  const factor = 10 ** digits;
-  return Math.round(value * factor) / factor;
+function buildSiteFilter(
+  selectedSlug: string | null
+): maplibregl.FilterSpecification | undefined {
+  if (!selectedSlug) return undefined;
+  return ["!=", "slug", selectedSlug] as maplibregl.FilterSpecification;
 }
 
-function getRoundedViewportKey(map: maplibregl.Map, period: string): string {
-  const bounds = map.getBounds();
+function buildUnclusteredSiteFilter(
+  selectedSlug: string | null
+): maplibregl.FilterSpecification {
+  if (!selectedSlug) {
+    return ["!has", "point_count"] as maplibregl.FilterSpecification;
+  }
+
   return [
-    roundCoord(bounds.getWest(), 2),
-    roundCoord(bounds.getSouth(), 2),
-    roundCoord(bounds.getEast(), 2),
-    roundCoord(bounds.getNorth(), 2),
-    period,
-  ].join("|");
+    "all",
+    ["!has", "point_count"],
+    ["!=", "slug", selectedSlug],
+  ] as maplibregl.FilterSpecification;
+}
+
+function addTerrainSource(map: maplibregl.Map) {
+  const terrainTilesUrl = process.env.NEXT_PUBLIC_TERRAIN_TILES_URL;
+  if (!terrainTilesUrl || map.getSource(TERRAIN_SOURCE_ID)) return;
+
+  const tileSize = Number(process.env.NEXT_PUBLIC_TERRAIN_TILE_SIZE || "256");
+  const encoding =
+    process.env.NEXT_PUBLIC_TERRAIN_ENCODING === "terrarium"
+      ? "terrarium"
+      : "mapbox";
+
+  map.addSource(TERRAIN_SOURCE_ID, {
+    type: "raster-dem",
+    tiles: [terrainTilesUrl],
+    tileSize,
+    encoding,
+  } as maplibregl.RasterDEMSourceSpecification);
+
+  map.setTerrain({
+    source: TERRAIN_SOURCE_ID,
+    exaggeration: 1.1,
+  });
 }
 
 export default function MapShell() {
@@ -107,15 +169,12 @@ export default function MapShell() {
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLoadedViewportKeyRef = useRef<string | null>(null);
   const requestSerialRef = useRef(0);
   const selectedPeriodRef = useRef<string>("");
-  const clusterHandlerAttachedRef = useRef(false);
   const tileCacheRef = useRef<Map<string, TileCacheValue>>(new Map());
 
   const [selectedSite, setSelectedSite] = useState<SiteDetail | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
-  const [layerVisibility, setLayerVisibility] = useState<Record<number, boolean>>({});
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -137,10 +196,9 @@ export default function MapShell() {
       | undefined;
     if (source) source.setData(emptyGeoJSON());
     setSelectedSlug(null);
-    // Update filter on main layer
-    if (map.getLayer(CIRCLE_LAYER_ID)) {
-      map.setFilter(CIRCLE_LAYER_ID, null);
-    }
+    const baseFilter = buildUnclusteredSiteFilter(null);
+    if (map.getLayer(CIRCLE_LAYER_ID)) map.setFilter(CIRCLE_LAYER_ID, baseFilter);
+    if (map.getLayer(LABEL_LAYER_ID)) map.setFilter(LABEL_LAYER_ID, baseFilter);
   }
 
   function setSelectedOverlay(
@@ -153,175 +211,121 @@ export default function MapShell() {
       | undefined;
     if (source) source.setData(selectedSiteGeoJSON(site));
     setSelectedSlug(site.slug);
-    // Update filter on main layer to exclude selected
-    if (map.getLayer(CIRCLE_LAYER_ID)) {
-      map.setFilter(CIRCLE_LAYER_ID, ["!=", ["get", "slug"], site.slug]);
-    }
-  }
-
-  function removeMainSourceAndLayers(map: maplibregl.Map) {
-    [LABEL_LAYER_ID, CIRCLE_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CLUSTER_LAYER_ID].forEach(
-      (id) => {
-        if (map.getLayer(id)) map.removeLayer(id);
-      }
-    );
-    if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-    clusterHandlerAttachedRef.current = false;
+    const filter = buildUnclusteredSiteFilter(site.slug);
+    if (map.getLayer(CIRCLE_LAYER_ID))
+      map.setFilter(CIRCLE_LAYER_ID, filter);
+    if (map.getLayer(LABEL_LAYER_ID))
+      map.setFilter(LABEL_LAYER_ID, filter);
   }
 
   function addMainSourceAndLayers(
     map: maplibregl.Map,
-    clustered: boolean
+    selectedSlugOverride: string | null = selectedSlug
   ) {
-    // For vector tiles, use vector source
     map.addSource(SOURCE_ID, {
-      type: "vector",
-      tiles: [`http://localhost:8000/api/layers/1/tiles/{z}/{x}/{y}.pbf`], // layer_id 1 is sites
-      minzoom: 0,
-      maxzoom: 14
+      type: "geojson",
+      data: emptyGeoJSON(),
+      cluster: true,
+      clusterRadius: 50,
+      clusterMaxZoom: 8,
     });
 
-    if (clustered) {
-      map.addLayer({
-        id: CLUSTER_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        "source-layer": "sites",
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": "#7c3aed",
-          "circle-radius": [
-            "step",
-            ["get", "point_count"],
-            16,
-            10,
-            20,
-            50,
-            26,
-            100,
-            32,
-          ],
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 2,
-        },
-      });
+    const siteFilter = buildUnclusteredSiteFilter(selectedSlugOverride);
 
-      map.addLayer({
-        id: CLUSTER_COUNT_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        "source-layer": "sites",
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": ["get", "point_count_abbreviated"],
-          "text-size": 12,
-        },
-        paint: {
-          "text-color": "#ffffff",
-        },
-      });
-
-      map.addLayer({
-        id: CIRCLE_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        "source-layer": "sites",
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#b91c1c",
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1.25,
-        },
-      });
-
-      map.addLayer({
-        id: LABEL_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        "source-layer": "sites",
-        filter: ["!", ["has", "point_count"]],
-        minzoom: 7,
-        layout: {
-          "text-field": ["get", "display_name"],
-          "text-size": 12,
-          "text-offset": [0, 1.2],
-        },
-        paint: {
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.2,
-        },
-      });
-    } else {
-      map.addLayer({
-        id: CIRCLE_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#b91c1c",
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1.25,
-        },
-      });
-
-      map.addLayer({
-        id: LABEL_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        minzoom: 7,
-        layout: {
-          "text-field": ["get", "display_name"],
-          "text-size": 12,
-          "text-offset": [0, 1.2],
-        },
-        paint: {
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.2,
-        },
-      });
-    }
-  }
-
-  function wireClusterClick(map: maplibregl.Map, clustered: boolean) {
-    if (!clustered || clusterHandlerAttachedRef.current) return;
-
-    clusterHandlerAttachedRef.current = true;
-
-    map.on("click", CLUSTER_LAYER_ID, (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: [CLUSTER_LAYER_ID],
-      });
-
-      const cluster = features[0];
-      if (!cluster) return;
-
-      const clusterId = cluster.properties?.cluster_id;
-      const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
-
-      if (!source?.getClusterExpansionZoom || clusterId == null) return;
-
-      source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
-        if (err) return;
-
-        const geometry = cluster.geometry as GeoJSON.Point;
-        const coordinates = geometry.coordinates as [number, number];
-
-        map.easeTo({
-          center: coordinates,
-          zoom,
-          duration: 500,
-        });
-      });
+    map.addLayer({
+      id: CLUSTER_LAYER_ID,
+      type: "circle",
+      source: SOURCE_ID,
+      filter: ["has", "point_count"] as maplibregl.FilterSpecification,
+      paint: {
+        "circle-color": "#7c3aed",
+        "circle-radius": [
+          "step",
+          ["get", "point_count"],
+          16,
+          10,
+          20,
+          50,
+          26,
+          100,
+          32,
+        ],
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 2,
+        "circle-opacity": 0.9,
+      },
     });
 
-    map.on("mouseenter", CLUSTER_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "pointer";
+    map.addLayer({
+      id: CLUSTER_COUNT_LAYER_ID,
+      type: "symbol",
+      source: SOURCE_ID,
+      filter: ["has", "point_count"] as maplibregl.FilterSpecification,
+      layout: {
+        "text-field": ["get", "point_count_abbreviated"],
+        "text-size": 12,
+      },
+      paint: {
+        "text-color": "#ffffff",
+      },
     });
 
-    map.on("mouseleave", CLUSTER_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "";
-    });
+    const circleLayer: maplibregl.CircleLayerSpecification = {
+      id: CIRCLE_LAYER_ID,
+      type: "circle",
+      source: SOURCE_ID,
+      filter: siteFilter,
+      paint: {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          2.5,
+          6,
+          4.5,
+          10,
+          7,
+        ],
+        "circle-color": "#b91c1c",
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 1.25,
+        "circle-opacity": 0.9,
+      },
+    };
+    map.addLayer(circleLayer);
+
+    const labelLayer: maplibregl.SymbolLayerSpecification = {
+      id: LABEL_LAYER_ID,
+      type: "symbol",
+      source: SOURCE_ID,
+      filter: siteFilter,
+      minzoom: 5.5,
+      layout: {
+        "text-field": ["get", "display_name"],
+        "text-font": ["Open Sans Regular"],
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          5.5,
+          9,
+          8,
+          10,
+          10,
+          12,
+        ],
+        "text-offset": [0, 1.1],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+      },
+      paint: {
+        "text-color": "#1f2937",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.2,
+      },
+    };
+    map.addLayer(labelLayer);
   }
 
   async function fetchVisibleTiles(
@@ -344,9 +348,7 @@ export default function MapShell() {
       tiles.map(async (tile: TileCoord) => {
         const cacheKey = `${tileKey(tile)}|${period}`;
         const cached = tileCacheRef.current.get(cacheKey);
-        if (cached) {
-          return cached.sites;
-        }
+        if (cached) return cached.sites;
 
         const sites = await listSites(
           tileBboxString(tile),
@@ -363,9 +365,7 @@ export default function MapShell() {
       })
     );
 
-    if (requestId !== requestSerialRef.current) {
-      return [];
-    }
+    if (requestId !== requestSerialRef.current) return [];
 
     const deduped = new Map<string, SiteSummary>();
     for (const group of tileResults) {
@@ -379,42 +379,54 @@ export default function MapShell() {
     return Array.from(deduped.values());
   }
 
-  async function rebuildMainSourceForViewport(
-    map: maplibregl.Map,
-    options?: { force?: boolean; periodOverride?: string }
-  ) {
-    const period = options?.periodOverride ?? selectedPeriodRef.current;
-    const viewportKey = getRoundedViewportKey(map, period);
-    const force = options?.force ?? false;
+  async function refreshMainSource(map: maplibregl.Map, period?: string) {
+    const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (!source) return;
 
-    if (!force && viewportKey === lastLoadedViewportKeyRef.current) return;
-
-    const clustered = !period;
-    const sites = await fetchVisibleTiles(map, period);
-    const data = toGeoJSON(sites);
-
-    clearPopup();
-    clearSelectedOverlay();
-    setSelectedSite(null);
-
-    removeMainSourceAndLayers(map);
-    addMainSourceAndLayers(map, clustered);
-    wireClusterClick(map, clustered);
-
-    lastLoadedViewportKeyRef.current = viewportKey;
+    const sites = await fetchVisibleTiles(map, period ?? "");
+    source.setData(toGeoJSON(sites));
   }
 
-  function scheduleViewportRefresh(
-    map: maplibregl.Map,
-    options?: { force?: boolean; periodOverride?: string }
-  ) {
+  function scheduleViewportRefresh(map: maplibregl.Map, period?: string) {
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
 
     refreshTimeoutRef.current = setTimeout(() => {
-      void rebuildMainSourceForViewport(map, options);
+      void refreshMainSource(map, period);
     }, REFRESH_DEBOUNCE_MS);
+  }
+
+  function wireClusterInteractions(map: maplibregl.Map) {
+    map.on("click", CLUSTER_LAYER_ID, (e) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+
+      const clusterId = feature.properties?.cluster_id;
+      const source = map.getSource(SOURCE_ID) as ClusterSource | undefined;
+      if (!source?.getClusterExpansionZoom || clusterId == null) return;
+
+      source.getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
+        if (err) return;
+
+        const geometry = feature.geometry as GeoJSON.Point;
+        const coordinates = geometry.coordinates as [number, number];
+
+        map.easeTo({
+          center: coordinates,
+          zoom,
+          duration: 500,
+        });
+      });
+    });
+
+    map.on("mouseenter", CLUSTER_LAYER_ID, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", CLUSTER_LAYER_ID, () => {
+      map.getCanvas().style.cursor = "";
+    });
   }
 
   useEffect(() => {
@@ -422,22 +434,17 @@ export default function MapShell() {
 
     const map = new maplibregl.Map({
       container: mapRef.current,
-      style:
-        process.env.NEXT_PUBLIC_MAP_STYLE_URL ||
-        "https://demotiles.maplibre.org/style.json",
+      style: MAP_STYLE,
       center: [-89.5, 18.0],
       zoom: 5.5,
     });
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
-    map.on("load", async () => {
-      const initialPeriod = selectedPeriodRef.current;
-      const clustered = !initialPeriod;
-      lastLoadedViewportKeyRef.current = getRoundedViewportKey(map, initialPeriod);
-
-      addMainSourceAndLayers(map, clustered);
-      wireClusterClick(map, clustered);
+    map.on("load", () => {
+      addTerrainSource(map);
+      addMainSourceAndLayers(map, null);
+      wireClusterInteractions(map);
 
       map.addSource(SELECTED_SOURCE_ID, {
         type: "geojson",
@@ -503,8 +510,10 @@ export default function MapShell() {
         map.getCanvas().style.cursor = "";
       });
 
+      void refreshMainSource(map, selectedPeriodRef.current);
+
       map.on("moveend", () => {
-        scheduleViewportRefresh(map);
+        scheduleViewportRefresh(map, selectedPeriodRef.current);
       });
     });
 
@@ -526,10 +535,7 @@ export default function MapShell() {
     clearSelectedOverlay();
     setSelectedSite(null);
 
-    scheduleViewportRefresh(map, {
-      force: true,
-      periodOverride: selectedPeriod,
-    });
+    void refreshMainSource(map, selectedPeriod);
   }, [selectedPeriod]);
 
   async function handleSelectSite(site: SiteSummary) {
@@ -562,17 +568,24 @@ export default function MapShell() {
   }
 
   function handleLayerToggle(layerId: number, visible: boolean) {
-    setLayerVisibility(prev => ({ ...prev, [layerId]: visible }));
-
     const map = mapInstanceRef.current;
     if (!map) return;
 
     // For now, only handle sites layer (id 1)
     if (layerId === 1) {
-      const layersToToggle = [CLUSTER_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CIRCLE_LAYER_ID, LABEL_LAYER_ID];
-      layersToToggle.forEach(layerId => {
-        if (map.getLayer(layerId)) {
-          map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+      const layersToToggle = [
+        CLUSTER_LAYER_ID,
+        CLUSTER_COUNT_LAYER_ID,
+        CIRCLE_LAYER_ID,
+        LABEL_LAYER_ID,
+      ];
+      layersToToggle.forEach((mapLayerId) => {
+        if (map.getLayer(mapLayerId)) {
+          map.setLayoutProperty(
+            mapLayerId,
+            "visibility",
+            visible ? "visible" : "none"
+          );
         }
       });
     }
