@@ -375,6 +375,37 @@ Planned components:
 
 ---
 
+# Phase 14 — AI Research Assistant
+
+Goal:
+Use AI to support curation, provenance analysis, and research exploration.
+
+Proposed implementation order:
+
+1. ingestion assistant for review candidates and resolutions
+2. provenance conflict summarizer for site/source disagreements
+3. natural-language map filtering over structured fields
+
+Research-facing extensions:
+
+- anomaly and pattern finder for the current map view
+- comparative site briefs for selected groups of sites
+- uncertainty interpreter for chronology, provenance, and location precision
+
+Longer-term ambitions:
+
+- hypothesis generation mode
+- literature-aware regional summaries
+- saved AI-assisted research workspaces
+
+Guardrails:
+
+- AI outputs should be grounded in structured data and cited provenance
+- speculative interpretations must be clearly labeled as suggestions
+- uncertainty and disagreement should be surfaced, not hidden
+
+---
+
 # Current Project Status
 
 Completed
@@ -392,17 +423,20 @@ Completed
 - site drawer functioning
 - stable clustered map rendering
 - HTML label overlays and cluster counts
+- optional hillshade and 3D terrain controls
 - Phase 12 ingestion pipeline foundation
 - import reporting and idempotent site import behavior
 - ingestion fixture verification
 - review candidate and resolution workflow
+- Wayeb GIS Atlas added to the curated ingestion pipeline
+- Phase 13 deployment-readiness env and runbook foundation
 - baseline Git commit
 
 Next step
 
-Continue Phase 12.
+Continue Phase 13.
 
-Document the ingestion workflow and keep improving reviewed reconciliation.
+Choose the first deployment target and add provider-specific deployment config.
 
 ---
 
@@ -410,12 +444,11 @@ Document the ingestion workflow and keep improving reviewed reconciliation.
 
 Suggested feature branches:
 
-feature/phase-12-ingestion
 feature/phase-13-deployment
-feature/layer-system
-feature/site-detail-pages
+feature/phase-14-ai-assistant
 feature/vector-tile-pipeline
-feature/deployment
+feature/witschey-brown-ingestion
+feature/deployment-provider-config
 
 Each feature should be implemented in its own branch and merged after testing.
 
