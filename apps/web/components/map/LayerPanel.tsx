@@ -32,9 +32,12 @@ export default function LayerPanel({ onLayerToggle }: LayerPanelProps) {
   }, []);
 
   const visibleLayers = layers.filter((layer) => {
-    // The chronology entry is not a real separate map overlay yet.
-    // Temporal filtering is currently handled by the PeriodFilter control.
-    if (layer.key === "chronology") return false;
+    // Only show layers that have real frontend behavior today.
+    // Temporal filtering is handled by the PeriodFilter control, and the
+    // other overlays below are still placeholders for future map work.
+    if (["chronology", "polity_regions", "population"].includes(layer.key)) {
+      return false;
+    }
     return true;
   });
 
