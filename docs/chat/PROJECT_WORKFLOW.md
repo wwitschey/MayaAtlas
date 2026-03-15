@@ -106,6 +106,7 @@ Primary scripts:
 - `scripts/harvest/ingest_open_datasets.py`
 - `scripts/harvest/import_open_sites.sh`
 - `scripts/harvest/verify_ingestion_fixture.py`
+- `docs/chat/INGESTION_RUNBOOK.md`
 
 Curated review files:
 
@@ -119,3 +120,7 @@ Current ingestion expectations:
 3. Record durable decisions in `review_resolutions.csv`.
 4. Re-run ingestion so those decisions are applied deterministically.
 5. Use import-report metrics to confirm idempotent behavior.
+
+Operator reference:
+
+- `docs/chat/INGESTION_RUNBOOK.md`

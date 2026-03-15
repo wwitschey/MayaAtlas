@@ -41,6 +41,7 @@ layer_data.py
 ingest_open_datasets.py
 import_open_sites.sh
 verify_ingestion_fixture.py
+INGESTION_RUNBOOK.md
 
 When proposing changes ensure compatibility with:
 
