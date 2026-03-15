@@ -7,10 +7,10 @@ These rules prevent rendering errors, layer crashes, and state corruption when d
 
 The issues documented here were discovered while implementing:
 
-- viewport-driven loading
-- temporal filtering
-- clustering
-- spatial tile caching
+- clustered site rendering
+- selected-site overlays
+- HTML label overlays
+- MapLibre text/glyph failure recovery
 
 These rules should be followed whenever modifying the map architecture.
 
@@ -18,14 +18,23 @@ These rules should be followed whenever modifying the map architecture.
 
 # Core Rule
 
-**Never mutate a MapLibre source that changes structural behavior.**
+**Prefer the current stable map path unless there is a clear reason to change it.**
 
-If any of the following change:
+Current stable path:
+
+- OpenStreetMap raster basemap
+- clustered GeoJSON source for site points
+- separate GeoJSON source for selected site
+- HTML overlays for site labels and cluster count text
+
+If a MapLibre source must change structural behavior, destroy and recreate it.
+
+Examples:
 
 - clustering
 - filtering
 - source data structure
-- tile loading strategy
+- source type
 
 then the source must be **destroyed and recreated**.
 
@@ -33,7 +42,7 @@ then the source must be **destroyed and recreated**.
 
 # Required Source Lifecycle
 
-Whenever the site dataset refreshes:
+When structural source behavior changes:
 
 1. Remove dependent layers
 2. Remove the source
@@ -55,7 +64,7 @@ This avoids MapLibre internal errors.
 
 # Known MapLibre Failure Modes
 
-## Cluster + Filter Crash
+## Symbol Text Crash
 
 MapLibre may throw errors like:
 
@@ -63,20 +72,16 @@ MapLibre may throw errors like:
 Cannot read properties of undefined (reading 'range')
 ```
 
-Cause:
+Common trigger:
 
-Clustered sources combined with dynamic filters.
+- symbol text layers
+- glyph loading failures
+- dynamic rebuilds around clustered sources
 
-Solution used in Maya Atlas:
+Stable solution used in Maya Atlas:
 
-```
-clustered = !period
-```
-
-When a time period filter is active:
-
-- clustering is disabled
-- sites render as plain markers
+- do not use MapLibre symbol text for site names or cluster counts
+- render text as HTML overlays instead
 
 ---
 
@@ -102,47 +107,18 @@ This allows the main site source to be safely rebuilt.
 
 ---
 
-# Viewport Refresh Behavior
+# HTML Overlay Rules
 
-Map refresh is triggered by:
+Use HTML overlays for:
 
-```
-map.on("moveend")
-```
+- site labels
+- cluster count text
 
-Refresh is protected by:
+Benefits:
 
-- debounce timer
-- viewport key comparison
-
-Example viewport key:
-
-```
-west|south|east|north|period
-```
-
-Coordinates are rounded to reduce unnecessary reloads.
-
----
-
-# Tile Cache Rules
-
-Client-side spatial tile cache introduced in Phase 8.5.
-
-Cache key:
-
-```
-z/x/y | period
-```
-
-Tile cache behavior:
-
-- visible tiles are determined from map bounds
-- each tile is fetched once
-- results stored in memory
-- tile results merged before rendering
-
-This prevents repeated API calls when panning small distances.
+- avoids glyph endpoint failures
+- avoids symbol-layer rebuild crashes
+- keeps label tuning separate from MapLibre source behavior
 
 ---
 
@@ -164,15 +140,11 @@ Otherwise multiple handlers accumulate after source rebuilds.
 
 The correct pipeline for Maya Atlas is:
 
-1. Determine visible tiles
-2. Fetch tile data (using cache)
-3. Merge tile results
-4. Convert to GeoJSON
-5. Remove layers
-6. Remove source
-7. Recreate source
-8. Add layers
-9. Reattach cluster click handler
+1. Load site data for the current map state
+2. Create or refresh the clustered GeoJSON source
+3. Render circles and clusters with MapLibre
+4. Render labels and cluster count text as HTML overlays
+5. Reattach cluster click handler if the source was rebuilt
 
 ---
 
@@ -180,13 +152,12 @@ The correct pipeline for Maya Atlas is:
 
 Potential improvements that maintain compatibility with current rules:
 
-- server-side tile caching
 - vector tiles
 - PMTiles
 - terrain layers
 - region polygon overlays
 
-Any of these must preserve the **source rebuild pattern** above.
+Any of these must preserve the stable rendering guarantees above.
 
 ---
 
@@ -202,9 +173,10 @@ Breaking these rules will likely produce:
 Always test:
 
 - clustering
-- period filtering
 - map panning
 - map zooming
 - marker click behavior
+- HTML label density
+- cluster count overlays
 
 after any map architecture change.

@@ -305,7 +305,18 @@ Routes:
 Goal:
 Scale mapping performance.
 
-Implementation:
+Status:
+Phase 11 map stabilization is complete and merged to `main`.
+
+Implemented in the stable path:
+
+- OpenStreetMap raster basemap
+- clustered GeoJSON site rendering
+- HTML-based site labels and cluster count overlays
+- selected-site overlay via separate source
+- backend tile endpoint and CORS fixes for future tile-native work
+
+Deferred within this phase:
 
 - vector tile pipeline
 - PMTiles for static layers
@@ -319,14 +330,33 @@ Implementation:
 Goal:
 Create sustainable data ingestion.
 
-Pipeline stages:
+Status:
+In progress on `feature/phase-12-ingestion`.
+
+Implemented pipeline stages:
 
 1. raw data import
 2. normalization
 3. reconciliation
 4. curated dataset
-5. publishing scripts
-6. tile generation
+5. import reporting
+6. review candidate export
+7. persisted review resolutions
+
+Current artifacts and scripts:
+
+- `scripts/harvest/ingest_open_datasets.py`
+- `scripts/harvest/import_open_sites.sh`
+- `scripts/harvest/verify_ingestion_fixture.py`
+- `data/curated/open-datasets/sites_normalized.csv`
+- `data/curated/open-datasets/review_candidates.csv`
+- `data/curated/open-datasets/review_resolutions.csv`
+
+Still to do in Phase 12:
+
+- contributor-facing ingestion documentation
+- richer reconciliation heuristics where safe
+- optional publishing/tile generation integration once ingestion rules settle
 
 ---
 
@@ -360,13 +390,19 @@ Completed
 - search endpoint working
 - web app running
 - site drawer functioning
+- stable clustered map rendering
+- HTML label overlays and cluster counts
+- Phase 12 ingestion pipeline foundation
+- import reporting and idempotent site import behavior
+- ingestion fixture verification
+- review candidate and resolution workflow
 - baseline Git commit
 
 Next step
 
-Phase 5 — Map interactivity.
+Continue Phase 12.
 
-Add site markers and enable marker click interaction.
+Document the ingestion workflow and keep improving reviewed reconciliation.
 
 ---
 
@@ -374,10 +410,8 @@ Add site markers and enable marker click interaction.
 
 Suggested feature branches:
 
-feature/map-site-markers
-feature/flagship-site-data
-feature/viewport-bbox-loading
-feature/temporal-filtering
+feature/phase-12-ingestion
+feature/phase-13-deployment
 feature/layer-system
 feature/site-detail-pages
 feature/vector-tile-pipeline

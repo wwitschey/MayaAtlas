@@ -11,32 +11,40 @@ MapLibre GL
 
 Current development phase:
 
-Phase 8.5 — Spatial tile caching
+Phase 12 — Data Ingestion Workflow
 
 Features already implemented:
 
-viewport-driven site loading
-time period filtering
-clustered and non-clustered rendering
-MapLibre source rebuild strategy
-client-side spatial tile cache
+- stable clustered map rendering
+- OpenStreetMap raster basemap
+- HTML site labels and cluster count overlays
+- selected-site overlay via separate GeoJSON source
+- backend tile endpoint groundwork
+- ingestion normalization and reconciliation
+- import reporting
+- review candidate export
+- persisted review resolutions
+- fixture-based ingestion verification
 
 Key constraints:
 
-1. Never mutate existing MapLibre sources.
-2. Always remove layers and sources before rebuilding.
-3. Selected sites use a separate GeoJSON source.
-4. Tile cache keys include z/x/y and period.
+1. Avoid MapLibre symbol text layers in the stable map path.
+2. Selected sites use a separate GeoJSON source.
+3. Persist reviewed ingestion decisions in `review_resolutions.csv`.
+4. Keep imports idempotent; unchanged rows should not update `sites.updated_at`.
 
 Important files:
 
 MapShell.tsx
-tiles.ts
 api.ts
-site_list.py
+layer_data.py
+ingest_open_datasets.py
+import_open_sites.sh
+verify_ingestion_fixture.py
 
 When proposing changes ensure compatibility with:
 
-temporal filtering
-tile caching
-MapLibre source lifecycle.
+stable clustered map rendering
+HTML overlay labels
+ingestion review workflow
+idempotent import reporting
